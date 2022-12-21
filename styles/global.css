@@ -1,0 +1,22 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Open Sans', sans-serif;
+  background: #F7F7F7;
+  height: 100%;
+  margin: 0;
+  background-image: url('/../img/pexels-adam-krypel-64989941.webp');  /*from www.pexels.com*/
+  background-size: cover;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin: 0;
+}
