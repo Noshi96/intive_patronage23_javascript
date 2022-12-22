@@ -14,7 +14,6 @@
   background: #aa22ff5d;
   background: linear-gradient(135deg, #2534be94, #2596be94);
   backdrop-filter: blur(21px);
-  border: 1px solid #000000;
   box-shadow: 0 1px 32px #2596be54;
   display: flex;
   align-items: center;
@@ -48,10 +47,9 @@
  text-shadow: 2px 2px #000000;
 }
 
-.register-form  input {
+.single-input  input {
   font-size: 1.1rem;
   padding: 1rem;
-  border:1px solid #000000;
   border-radius: 5px;
 }
 
@@ -65,4 +63,19 @@
   color: #ffffff;
   font-weight: 700;
   cursor: pointer;
+}
+
+@media only screen and (min-width: 769px) {
+  .register-form-container {
+    width: auto;
+  }
+  .single-input {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .register-form-title {
+    padding-bottom: 2.2rem;
+  }
 }
