@@ -11,9 +11,8 @@
   width: 24rem;
   height: auto;
   border-radius: 5px;
-  background: #aa22ff5d;
-  background: linear-gradient(135deg, #2534be94, #2596be94);
-  backdrop-filter: blur(21px);
+  background: #828282;
+
   box-shadow: 0 1px 32px #2596be54;
   display: flex;
   align-items: center;
@@ -36,9 +35,8 @@
 }
 
 .single-input {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
+  display: grid;
+  grid-template-columns: 1fr;
 }
 
 .single-input label{
@@ -51,6 +49,7 @@
   font-size: 1.1rem;
   padding: 1rem;
   border-radius: 5px;
+  border: 1px solid #000000;
 }
 
 .register-button {
@@ -65,16 +64,31 @@
   cursor: pointer;
 }
 
+.register-button:hover {
+  background: #474747;
+}
+
+.register-button:active {
+  background: #333333;
+}
+
+.error {
+  color: #b00020;
+  font-weight: 700;
+}
+
 @media only screen and (min-width: 769px) {
   .register-form-container {
-    width: auto;
+    width: 35.5rem;
   }
   .single-input {
-    flex-direction: row;
+    grid-template-columns: 1fr 1fr;
     align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
   }
+  /* .single-input span {
+    grid-area: 2 / 1;
+    width: 50%;
+  } */
   .register-form-title {
     padding-bottom: 2.2rem;
   }
