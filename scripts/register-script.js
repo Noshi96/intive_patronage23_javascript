@@ -13,6 +13,17 @@ const userPasswordInputText = 'Utwórz hasło';
 const userEmailInputText = 'Podaj adres e-mail';
 const userEmailConfirmationInputText = 'Wpisz e-mail ponownie';
 
+const isUserNameValidText =
+  'The user name must not contain forbidden characters.';
+const isUserNameDuplicatedText = 'Duplicated user name.';
+const isEnoughLettersText = 'Not enough characters.';
+const isEnoughDigitsText = 'Not enough digits.';
+
+const isEmailValidText = 'Wrong email format.';
+const isDuplicatedEmailWithAliasText = 'Duplicated email with alias.';
+const isDuplicatedEmailText = 'Duplicated email.';
+const isEmailAndConfirmEmailValidText = 'Confirm email is different then email';
+
 /**
  * @class Model
  *
@@ -24,81 +35,138 @@ class RegisterModel {
   }
 
   #commit(users) {
-    localStorage.setItem('users', JSON.stringify(users));
+    localStorage.setItem('registeredUsers', JSON.stringify(users));
   }
 
-  addUser(userProp) {
-    const user = {
-      ...userProp,
-      id: self.crypto.randomUUID(),
-    };
-    console.log({ user });
-    //this.users.push(user);
-    //this.#commit(this.users);
+  #isUserDataValid = false;
+
+  addUser({ userName, userEmail, userPassword }) {
+    if (this.#isUserDataValid) {
+      const user = {
+        userName,
+        userEmail,
+        userPassword: this.#hashUserPassword(userPassword),
+        id: self.crypto.randomUUID(),
+      };
+
+      this.users.push(user);
+      this.#commit(this.users);
+    }
   }
 
-  validateUserName(name) {
+  #validateUserName(name) {
     const userRegExp = /^[a-zA-Z0-9 \/\\[\]_-]+$/;
     const isUserNameValid = name.match(userRegExp);
-    const countLetters = str.replace(/[^[a-zA-Z]/g, '').length;
-    const countDigits = str.replace(/[^0-9]/g, '').length;
+    const countLetters = name.replace(/[^[a-zA-Z]/g, '').length;
+    const countDigits = name.replace(/[^0-9]/g, '').length;
     const isDuplicated = this.users.some(({ userName }) => userName === name);
 
     if (!isUserNameValid) {
-      return 'User name is not valid.';
+      return isUserNameValidText;
     }
     if (isDuplicated) {
-      return 'Duplicated user name.';
+      return isUserNameDuplicatedText;
     }
     if (countLetters < 5) {
-      return 'Not enough characters.';
+      return isEnoughLettersText;
     }
     if (countDigits < 1) {
-      return 'Not enough digits.';
+      return isEnoughDigitsText;
     }
+    return 'valid';
   }
 
-  validateUserEmail(email) {
+  #validateUserEmail(email) {
     const emailRegExp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
     const isEmailValid = email.match(emailRegExp);
+    let isDuplicatedEmailWithAlias = false;
 
     if (!isEmailValid) {
-      return 'Wrong email format.';
+      return isEmailValidText;
     }
 
-    const isPlusInEmail = email.split('').some((char) => char === '+');
-    const firstPartOfEmail = email.split('+').at(0);
+    const isPlusInEmail = (checkEmail) => {
+      return checkEmail.split('').some((char) => char === '+');
+    };
 
-    if (isPlusInEmail) {
+    const firstPartOfEmailWithAlias = email.split('+').at(0);
+
+    if (isPlusInEmail(email)) {
       const userWithDuplicatedEmailFirstPart = this.users.filter(
-        ({ userEmail }) => userEmail.split('+').at(0) === firstPartOfEmail
+        ({ userEmail }) => {
+          // myEmail+elo@gmail.com and myEmail@gmail.com
+          if (isPlusInEmail(userEmail)) {
+            return userEmail.split('+').at(0) === firstPartOfEmailWithAlias;
+          } else {
+            return userEmail.split('@').at(0) === email.split('+').at(0);
+          }
+        }
       );
       // myEmail+elo@gmail.com and myEmail+elo@wp.pl are not the same
       if (userWithDuplicatedEmailFirstPart) {
-        const domain = userWithDuplicatedEmailFirstPart.email.split('@').at(1);
-        const duplicatedEmailWithAlias = email.split('@').at(1) === domain;
-        if (duplicatedEmailWithAlias) {
-          return 'Duplicated email with alias.';
-        }
+        userWithDuplicatedEmailFirstPart.forEach(({ userEmail }) => {
+          const domain = userEmail.split('@').at(1);
+          const duplicatedEmailWithAlias = email.split('@').at(1) === domain;
+
+          if (duplicatedEmailWithAlias) {
+            isDuplicatedEmailWithAlias = true;
+          }
+        });
       }
+    }
+
+    if (isDuplicatedEmailWithAlias) {
+      return isDuplicatedEmailWithAliasText;
     }
 
     const isDuplicated = this.users.some(
       ({ userEmail }) => userEmail === email
     );
+
     if (isDuplicated) {
-      return 'Duplicated email.';
+      return isDuplicatedEmailText;
     }
+    return 'valid';
+  }
+
+  #validateUserConfirmEmail(email, confirmEmail) {
+    return email !== confirmEmail ? isEmailAndConfirmEmailValidText : 'valid';
   }
 
   #hashUserPassword(password) {
     let hash = 0;
-    for (let i = 0, len = password.length; i < len; i++) {
+    for (let i = 0; i < password.length; i++) {
       let chr = password.charCodeAt(i);
       hash = (hash << 5) - hash + chr;
       hash |= 0;
     }
     return hash;
+  }
+
+  validateUserData(user) {
+    const { userName, userPassword, userEmail, userConfirmEmail } = user;
+
+    if (!userName && !userPassword && !userEmail && !userConfirmEmail) {
+      this.#isUserDataValid = false;
+    }
+
+    const userNameIsValidMessage = this.#validateUserName(userName);
+    const userEmailIsValidMessage = this.#validateUserEmail(userEmail);
+    const userConfirmEmailIsValidMessage = this.#validateUserConfirmEmail(
+      userEmail,
+      userConfirmEmail
+    );
+
+    this.#isUserDataValid =
+      userNameIsValidMessage === 'valid' &&
+      userEmailIsValidMessage === 'valid' &&
+      userConfirmEmailIsValidMessage === 'valid';
+
+    return {
+      userNameIsValidMessage,
+      userEmailIsValidMessage,
+      userConfirmEmailIsValidMessage,
+    };
   }
 }
 
@@ -127,7 +195,7 @@ class RegisterView {
             minlength="6"
             maxlength="16"
           />
-          <span class="error-user-name" aria-live="polite"></span>
+          <span class="error-user-name error" aria-live="polite"></span>
         </div>
         <div class="single-input">
           <label for="user-password">${userPasswordInputLabel}</label>
@@ -139,7 +207,7 @@ class RegisterView {
             required 
             minlength="6"
           />
-          <span class="error-user-password" aria-live="polite"></span>
+          <span class="error-user-password error" aria-live="polite"></span>
         </div>
         <div class="single-input">
           <label for="user-email">${userEmailInputLabel}</label>
@@ -150,7 +218,7 @@ class RegisterView {
             name="user-email"
             required
           />
-          <span class="error-user-email" aria-live="polite"></span>
+          <span class="error-user-email error" aria-live="polite"></span>
         </div>
         <div class="single-input">
           <label for="user-confirm-email">${userEmailConfirmationInputLabel}</label>
@@ -161,7 +229,7 @@ class RegisterView {
             name="user-confirm-email"
             required
           />
-          <span class="error-user--confirm-email" aria-live="polite"></span>
+          <span class="error-user-confirm-email error" aria-live="polite"></span>
         </div>
         <button class="register-button">${registerButtonText}</button>
       </form>
@@ -169,9 +237,14 @@ class RegisterView {
 
     this.form = this.formContainer.querySelector('.register-form');
     this.userName = this.formContainer.querySelector('#username');
+    this.userNameError = this.formContainer.querySelector('.error-user-name');
     this.userPassword = this.formContainer.querySelector('#password');
     this.userEmail = this.formContainer.querySelector('#email');
+    this.userEmailError = this.formContainer.querySelector('.error-user-email');
     this.userConfirmEmail = this.formContainer.querySelector('#confirmemail');
+    this.userConfirmEmailError = this.formContainer.querySelector(
+      '.error-user-confirm-email'
+    );
     this.app.append(this.formContainer);
   }
 
@@ -188,13 +261,6 @@ class RegisterView {
     return this.userConfirmEmail.value;
   }
 
-  #resetInputs() {
-    this.userName.value = '';
-    this.userPassword.value = '';
-    this.userEmail.value = '';
-    this.userConfirmEmail.value = '';
-  }
-
   createElement(tag, className) {
     const element = document.createElement(tag);
     if (className) element.classList.add(className);
@@ -203,24 +269,16 @@ class RegisterView {
   }
 
   bindAddUser(handler) {
-    // this.form.addEventListener('submit', (event) => {
-    //   event.preventDefault();
-    //   const user = {
-    //     userName: this.#userName,
-    //     userPassword: this.#userPassword,
-    //     userEmail: this.#userEmail,
-    //     userConfirmEmail: this.#userConfirmEmail,
-    //   };
-    //   if (
-    //     this.#userName &&
-    //     this.#userPassword &&
-    //     this.#userEmail &&
-    //     this.#userConfirmEmail
-    //   ) {
-    //     handler(user);
-    //     this.#resetInputs();
-    //   }
-    // });
+    this.form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const user = {
+        userName: this.#userName,
+        userPassword: this.#userPassword,
+        userEmail: this.#userEmail,
+        userConfirmEmail: this.#userConfirmEmail,
+      };
+      handler(user);
+    });
   }
 
   bindValidateUserData(handler) {
@@ -232,7 +290,21 @@ class RegisterView {
         userEmail: this.#userEmail,
         userConfirmEmail: this.#userConfirmEmail,
       };
-      handler(user);
+
+      const {
+        userNameIsValidMessage,
+        userEmailIsValidMessage,
+        userConfirmEmailIsValidMessage,
+      } = handler(user);
+
+      this.userNameError.textContent =
+        userNameIsValidMessage !== 'valid' ? userNameIsValidMessage : '';
+      this.userEmailError.textContent =
+        userEmailIsValidMessage !== 'valid' ? userEmailIsValidMessage : '';
+      this.userConfirmEmailError.textContent =
+        userConfirmEmailIsValidMessage !== 'valid'
+          ? userConfirmEmailIsValidMessage
+          : '';
     });
   }
 }
@@ -250,8 +322,8 @@ class RegisterController {
     this.model = model;
     this.view = view;
 
-    this.view.bindAddUser(this.handleAddUser);
     this.view.bindValidateUserData(this.handleValidateUserData);
+    this.view.bindAddUser(this.handleAddUser);
   }
 
   handleAddUser = (userProp) => {
@@ -259,7 +331,7 @@ class RegisterController {
   };
 
   handleValidateUserData = (user) => {
-    this.model.validateUserData(user);
+    return this.model.validateUserData(user);
   };
 }
 
