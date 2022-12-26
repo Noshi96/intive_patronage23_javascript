@@ -178,12 +178,14 @@ class RegisterModel {
 class RegisterView {
   constructor() {
     this.app = document.querySelector('#root');
+    this.app.innerHTML = '';
+
     this.formContainer = this.createElement('div');
-    this.formContainer.classList.add('register-form-container');
+    this.formContainer.classList.add('form-container');
 
     this.formContainer.innerHTML = `
-      <h1 class="register-form-title">${registerTitle}</h1>
-      <form class="register-form">
+      <h1 class="form-title">${registerTitle}</h1>
+      <form class="form-style">
         <div class="single-input">
           <label for="user-name">${userNameInputLabel}</label>
           <input
@@ -231,11 +233,11 @@ class RegisterView {
           />
           <span class="error-user-confirm-email error" aria-live="polite"></span>
         </div>
-        <button class="register-button">${registerButtonText}</button>
+        <button class="form-button">${registerButtonText}</button>
       </form>
     `;
 
-    this.form = this.formContainer.querySelector('.register-form');
+    this.form = this.formContainer.querySelector('.form-style');
     this.userName = this.formContainer.querySelector('#username');
     this.userNameError = this.formContainer.querySelector('.error-user-name');
     this.userPassword = this.formContainer.querySelector('#password');
