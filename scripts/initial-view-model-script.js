@@ -5,6 +5,29 @@ const initialText =
 
 const registerText = 'Rejestracja';
 const loginText = 'Logowanie';
+
+/**
+ * @class InitialModel
+ *
+ * Manages the data of the application.
+ */
+class InitialModel {
+  constructor() {}
+
+  initRegister() {
+    globalRegisterController = new RegisterController(
+      new RegisterModel(),
+      new RegisterView()
+    );
+  }
+  initLogin() {
+    globalLoginController = new LoginController(
+      new LoginModel(),
+      new LoginView()
+    );
+  }
+}
+
 /**
  * @class InitialView
  *
@@ -16,10 +39,10 @@ class InitialView {
     this.header = document.querySelector('.header');
     this.headerNav = this.createElement('nav', 'header-nav');
     this.app.innerHTML = '';
+    this.header.innerHTML = '';
 
     this.initialContainer = this.createElement('div');
     this.initialContainer.classList.add('initial-container');
-
     this.headerNav.innerHTML = `
       <ul class="nav-list-non-logged">
         <li class="button-style" id="register-nav-button">
@@ -29,7 +52,6 @@ class InitialView {
           ${loginText}
         </li>
       </ul>
-      <ul class="nav-list-logged-in"></ul>
     `;
 
     this.initialContainer.innerHTML = `
@@ -47,5 +69,21 @@ class InitialView {
     if (className) element.classList.add(className);
 
     return element;
+  }
+
+  bindInitRegister(handleInitRegister) {
+    document
+      .querySelector('#register-nav-button')
+      .addEventListener('click', () => {
+        handleInitRegister();
+      });
+  }
+
+  bindInitLogin(handleInitLogin) {
+    document
+      .querySelector('#login-nav-button')
+      .addEventListener('click', () => {
+        handleInitLogin();
+      });
   }
 }

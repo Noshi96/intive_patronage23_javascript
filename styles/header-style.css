@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   width: 100%;
-  height: 10rem;
+  height: 5rem;
   background: #828282;
   margin: 0;
   padding: 0;
@@ -12,7 +12,6 @@
 
 .header-nav {
   display: flex;
-  flex-direction: column;
   width: 100%;
 }
 
@@ -20,10 +19,10 @@
   display: flex;
   list-style: none;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 1rem;
   width: 100%;
-  padding: 0 1rem;
+  padding: 0;
 }
 
 .button-style {
@@ -52,10 +51,10 @@
   display: flex;
   list-style: none;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 3rem;
   width: 100%;
-  padding: 0 1rem;
+  padding: 0;
 }
 
 #logged-name {

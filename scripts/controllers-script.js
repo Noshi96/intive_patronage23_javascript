@@ -20,16 +20,16 @@ class LoginController {
     this.view.bindLogoutUser(this.handleLogoutUser);
   }
 
-  handleLoginUser = (user) => {
-    return this.registeredUser
-      ? this.model.loginUser(this.registeredUser)
-      : this.model.loginUser(user);
-  };
-
   handleValidateUserData = (user) => {
     return this.registeredUser
       ? this.model.validateUserData(this.registeredUser)
       : this.model.validateUserData(user);
+  };
+
+  handleLoginUser = (user) => {
+    return this.registeredUser
+      ? this.model.loginUser(this.registeredUser)
+      : this.model.loginUser(user);
   };
 
   handleLogoutUser = () => {
@@ -63,23 +63,22 @@ class RegisterController {
   };
 }
 
+class InitialController {
+  constructor(model, view) {
+    this.model = model;
+    this.view = view;
+    this.view.bindInitRegister(this.handlerInitRegister);
+    this.view.bindInitLogin(this.handlerInitLogin);
+  }
+  handlerInitRegister = () => {
+    this.model.initRegister();
+  };
+  handlerInitLogin = () => {
+    this.model.initLogin();
+  };
+}
+
+// Initiation
 document.addEventListener('DOMContentLoaded', () => {
-  const initialApp = new InitialView();
-  console.log('initial');
-
-  document
-    .querySelector('#register-nav-button')
-    .addEventListener('click', () => {
-      globalRegisterController = new RegisterController(
-        new RegisterModel(),
-        new RegisterView()
-      );
-    });
-
-  document.querySelector('#login-nav-button').addEventListener('click', () => {
-    globalLoginController = new LoginController(
-      new LoginModel(),
-      new LoginView()
-    );
-  });
+  new InitialController(new InitialModel(), new InitialView());
 });

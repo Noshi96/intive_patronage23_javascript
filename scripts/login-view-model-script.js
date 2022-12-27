@@ -4,7 +4,7 @@ const loginTitle = 'Zaloguj się';
 const loginButtonText = 'Zaloguj';
 
 const incentiveToOpenAccountText =
-  'Załóż konto na tego maila klikając w Zarejestruj.';
+  'Załóż konto na tego maila klikając w Rejestracja.';
 const incorrectPasswordOrUsername = 'Incorrect password or user name.';
 
 const userNameInputLabel = 'Nazwa użytkownika';
@@ -28,28 +28,6 @@ class LoginModel {
 
   #userLoggedIn = false;
   #isUserDataValid = false;
-
-  #login(userName) {
-    this.#userLoggedIn = true;
-    return userName;
-  }
-
-  #logout() {
-    this.#userLoggedIn = false;
-  }
-
-  loginUser({ userName }) {
-    if (this.#isUserDataValid || this.autoLogin) {
-      this.#isUserDataValid = false;
-      return this.#login(userName);
-    }
-  }
-
-  logoutUser() {
-    if (this.#userLoggedIn) {
-      this.#logout();
-    }
-  }
 
   #validateUserName(name) {
     const emailRegExp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
@@ -122,6 +100,29 @@ class LoginModel {
       userPasswordIsValidMessage,
     };
   }
+
+  #login(userName) {
+    this.#userLoggedIn = true;
+    return userName;
+  }
+
+  #logout() {
+    new InitialController(new InitialModel(), new InitialView());
+    this.#userLoggedIn = false;
+  }
+
+  loginUser({ userName }) {
+    if (this.#isUserDataValid) {
+      this.#isUserDataValid = false;
+      return this.#login(userName);
+    }
+  }
+
+  logoutUser() {
+    if (this.#userLoggedIn) {
+      this.#logout();
+    }
+  }
 }
 
 /**
@@ -132,11 +133,9 @@ class LoginModel {
 class LoginView {
   constructor(autoLogin = false) {
     this.autoLogin = autoLogin;
-    this.navListLoggedIn = document.querySelector('.nav-list-logged-in');
-    this.navListLoggedIn.innerHTML = '';
 
     this.app = document.querySelector('#root');
-
+    this.headerNav = document.querySelector('.header-nav');
     // If there is switch don't clear
     if (!this.autoLogin) {
       this.app.innerHTML = '';
@@ -190,6 +189,9 @@ class LoginView {
     this.logoutButton.classList.add('button-style');
     this.logoutButton.textContent = logoutText;
 
+    this.navListLoggedIn = this.createElement('ul', 'nav-list-logged-in');
+    this.navListNonLogged = this.createElement('ul', 'nav-list-non-logged');
+
     this.loggedName = document.createElement('li');
     this.loggedName.setAttribute('id', 'logged-name');
 
@@ -219,14 +221,16 @@ class LoginView {
       this.loggedName.textContent = name;
       this.navListLoggedIn.append(this.loggedName);
       this.navListLoggedIn.append(this.logoutButton);
+      this.headerNav.innerHTML = '';
+      this.headerNav.append(this.navListLoggedIn);
     }
   }
 
   bindLogoutUser(handleLogoutUser) {
     this.logoutButton.addEventListener('click', (event) => {
       event.preventDefault();
-      handleLogoutUser();
       this.navListLoggedIn.innerHTML = '';
+      handleLogoutUser();
     });
   }
 
@@ -245,32 +249,41 @@ class LoginView {
     }
   }
 
-  bindValidateUserData(handleValidateUserData) {
-    this.form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const user = {
-        userName: this.#userName,
-        userPassword: this.#userPassword,
-      };
+  #validateUserData(handleValidateUserData) {
+    const user = {
+      userName: this.#userName,
+      userPassword: this.#userPassword,
+    };
 
-      const {
-        userNameIsValidMessage,
-        userPasswordIsValidMessage,
-      } = handleValidateUserData(user);
-      // If the error notifications are the same, the error is displayed only after password input
-      if (userNameIsValidMessage === userPasswordIsValidMessage) {
-        this.userPasswordError.textContent =
-          userPasswordIsValidMessage !== 'valid'
-            ? userPasswordIsValidMessage
-            : '';
-      } else {
-        this.userNameError.textContent =
-          userNameIsValidMessage !== 'valid' ? userNameIsValidMessage : '';
-        this.userPasswordError.textContent =
-          userPasswordIsValidMessage !== 'valid'
-            ? userPasswordIsValidMessage
-            : '';
-      }
-    });
+    const {
+      userNameIsValidMessage,
+      userPasswordIsValidMessage,
+    } = handleValidateUserData(user);
+    // If the error notifications are the same, the error is displayed only after password input
+    if (userNameIsValidMessage === userPasswordIsValidMessage) {
+      this.userPasswordError.textContent =
+        userPasswordIsValidMessage !== 'valid'
+          ? userPasswordIsValidMessage
+          : '';
+    } else {
+      this.userNameError.textContent =
+        userNameIsValidMessage !== 'valid' ? userNameIsValidMessage : '';
+      this.userPasswordError.textContent =
+        userPasswordIsValidMessage !== 'valid'
+          ? userPasswordIsValidMessage
+          : '';
+    }
+  }
+
+  // If there is automatic logging then skip listening and run validation from the model
+  bindValidateUserData(handleValidateUserData) {
+    if (!this.autoLogin) {
+      this.form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        this.#validateUserData(handleValidateUserData);
+      });
+    } else {
+      this.#validateUserData(handleValidateUserData);
+    }
   }
 }
