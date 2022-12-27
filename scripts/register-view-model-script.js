@@ -3,8 +3,8 @@
 const registerTitle = 'Zarejestruj się';
 const registerButtonText = 'Zarejestruj';
 
-const userNameInputLabel = 'Nazwa użytkownika';
-const userPasswordInputLabel = 'Hasło';
+// const userNameInputLabel = 'Nazwa użytkownika';
+// const userPasswordInputLabel = 'Hasło';
 const userEmailInputLabel = 'Email';
 const userEmailConfirmationInputLabel = 'Potwierdź email';
 
@@ -25,7 +25,7 @@ const isDuplicatedEmailText = 'Duplicated email.';
 const isEmailAndConfirmEmailValidText = 'Confirm email is different then email';
 
 /**
- * @class Model
+ * @class RegisterModel
  *
  * Manages the data of the application.
  */
@@ -51,6 +51,21 @@ class RegisterModel {
 
       this.users.push(user);
       this.#commit(this.users);
+
+      const sameUserWithoutHash = {
+        userName,
+        userEmail,
+        userPassword,
+        id: user.id,
+      };
+
+      // automatic login as soon as registration is correct
+      const accessForAutoLogin = true;
+      const loginController = new LoginController(
+        new LoginModel(accessForAutoLogin),
+        new LoginView(accessForAutoLogin, sameUserWithoutHash),
+        sameUserWithoutHash
+      );
     }
   }
 
@@ -171,7 +186,7 @@ class RegisterModel {
 }
 
 /**
- * @class View
+ * @class RegisterView
  *
  * Visual representation of the model.
  */
@@ -270,7 +285,7 @@ class RegisterView {
     return element;
   }
 
-  bindAddUser(handler) {
+  bindAddUser(handleAddUser) {
     this.form.addEventListener('submit', (event) => {
       event.preventDefault();
       const user = {
@@ -279,11 +294,11 @@ class RegisterView {
         userEmail: this.#userEmail,
         userConfirmEmail: this.#userConfirmEmail,
       };
-      handler(user);
+      handleAddUser(user);
     });
   }
 
-  bindValidateUserData(handler) {
+  bindValidateUserData(handleValidateUserData) {
     this.form.addEventListener('submit', (event) => {
       event.preventDefault();
       const user = {
@@ -297,7 +312,7 @@ class RegisterView {
         userNameIsValidMessage,
         userEmailIsValidMessage,
         userConfirmEmailIsValidMessage,
-      } = handler(user);
+      } = handleValidateUserData(user);
 
       this.userNameError.textContent =
         userNameIsValidMessage !== 'valid' ? userNameIsValidMessage : '';
@@ -310,34 +325,3 @@ class RegisterView {
     });
   }
 }
-
-/**
- * @class Controller
- *
- * Links the user input and the view output.
- *
- * @param model
- * @param view
- */
-class RegisterController {
-  constructor(model, view) {
-    this.model = model;
-    this.view = view;
-
-    this.view.bindValidateUserData(this.handleValidateUserData);
-    this.view.bindAddUser(this.handleAddUser);
-  }
-
-  handleAddUser = (userProp) => {
-    this.model.addUser(userProp);
-  };
-
-  handleValidateUserData = (user) => {
-    return this.model.validateUserData(user);
-  };
-}
-
-const registerInitApp = new RegisterController(
-  new RegisterModel(),
-  new RegisterView()
-);
