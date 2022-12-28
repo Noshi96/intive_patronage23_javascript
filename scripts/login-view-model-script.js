@@ -4,7 +4,7 @@ const loginTitle = 'Zaloguj się';
 const loginButtonText = 'Zaloguj';
 
 const incentiveToOpenAccountText =
-  'Załóż konto na tego maila klikając w Zarejestruj.';
+  'Załóż konto na tego maila klikając w Rejestracja.';
 const incorrectPasswordOrUsername = 'Incorrect password or user name.';
 
 const userNameInputLabel = 'Nazwa użytkownika';
@@ -13,26 +13,24 @@ const userPasswordInputLabel = 'Hasło';
 const userNameInputLoginText = 'Podaj nazwę użytkownika';
 const userPasswordInputLoginText = 'Podaj hasło';
 
+const logoutText = 'Wyloguj';
+
 /**
- * @class Model
+ * @class LoginModel
  *
  * Manages the data of the application.
  */
 class LoginModel {
-  constructor() {
+  constructor(autoLogin = false) {
+    this.autoLogin = autoLogin;
     this.users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
   }
 
-  #login(userName) {
-    console.log(userName);
-  }
-
+  #userLoggedIn = false;
   #isUserDataValid = false;
 
-  loginUser({ userName }) {
-    if (this.#isUserDataValid) {
-      this.#login(userName);
-    }
+  #commitCurrentLoggedInUser(user) {
+    localStorage.setItem('currentLoggedInUser', JSON.stringify(user));
   }
 
   #validateUserName(name) {
@@ -102,22 +100,68 @@ class LoginModel {
       userNameIsValidMessage === 'valid' &&
       userPasswordIsValidMessage === 'valid';
 
+    if (this.#isUserDataValid) {
+      const loggedInUser = {
+        userName,
+        userPassword,
+      };
+      this.#commitCurrentLoggedInUser(loggedInUser);
+    }
+
     return {
       userNameIsValidMessage,
       userPasswordIsValidMessage,
     };
   }
+
+  #login(userName) {
+    this.#userLoggedIn = true;
+    return userName;
+  }
+
+  #logout() {
+    this.#commitCurrentLoggedInUser(null);
+    new InitialController(new InitialModel(), new InitialView());
+    this.#userLoggedIn = false;
+  }
+
+  loginUser(user) {
+    const { userName } = user;
+    if (this.#isUserDataValid) {
+      this.#isUserDataValid = false;
+      return this.#login(userName);
+    }
+  }
+
+  logoutUser() {
+    if (this.#userLoggedIn) {
+      this.#logout();
+    }
+  }
 }
 
 /**
- * @class View
+ * @class LoginView
  *
  * Visual representation of the model.
  */
 class LoginView {
-  constructor() {
+  constructor(autoLogin = false) {
+    this.autoLogin = autoLogin;
+
     this.app = document.querySelector('#root');
-    this.app.innerHTML = '';
+    this.headerNav = document.querySelector('.header-nav');
+    // If there is switch don't clear
+    if (!this.autoLogin) {
+      this.app.innerHTML = '';
+    }
+
+    this.registerNavButton = document.getElementById('register-nav-button');
+    this.loginNavButton = document.getElementById('login-nav-button');
+    this.registerNavButton.style.visibility = 'visible';
+    this.loginNavButton.style.visibility = 'hidden ';
+    this.registerNavButton.classList.remove('hide');
+    this.loginNavButton.classList.add('hide');
 
     this.formContainer = this.createElement('div');
     this.formContainer.classList.add('form-container');
@@ -162,7 +206,20 @@ class LoginView {
       '.error-user-password'
     );
 
-    this.app.append(this.formContainer);
+    this.logoutButton = document.createElement('li');
+    this.logoutButton.setAttribute('id', 'log-out');
+    this.logoutButton.classList.add('button-style');
+    this.logoutButton.textContent = logoutText;
+
+    this.navListLoggedIn = this.createElement('ul', 'nav-list-logged-in');
+
+    this.loggedName = document.createElement('li');
+    this.loggedName.setAttribute('id', 'logged-name');
+
+    // If there is switch don't append
+    if (!this.autoLogin) {
+      this.app.append(this.formContainer);
+    }
   }
 
   get #userName() {
@@ -179,71 +236,75 @@ class LoginView {
     return element;
   }
 
-  bindLoginUser(handler) {
-    this.form.addEventListener('submit', (event) => {
+  #displayUserAfterLogin(handleLoginUser, user) {
+    const name = handleLoginUser(user);
+    if (name) {
+      this.loggedName.textContent = name;
+      this.navListLoggedIn.append(this.loggedName);
+      this.navListLoggedIn.append(this.logoutButton);
+      this.headerNav.innerHTML = '';
+      this.headerNav.append(this.navListLoggedIn);
+    }
+  }
+
+  bindLogoutUser(handleLogoutUser) {
+    this.logoutButton.addEventListener('click', (event) => {
       event.preventDefault();
-      const user = {
-        userName: this.#userName,
-        userPassword: this.#userPassword,
-      };
-      handler(user);
+      this.navListLoggedIn.innerHTML = '';
+      handleLogoutUser();
     });
   }
 
-  bindValidateUserData(handler) {
-    this.form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const user = {
-        userName: this.#userName,
-        userPassword: this.#userPassword,
-      };
-
-      const { userNameIsValidMessage, userPasswordIsValidMessage } = handler(
-        user
-      );
-
-      // If the error notifications are the same, the error is displayed only after password input
-      if (userNameIsValidMessage === userPasswordIsValidMessage) {
-        this.userPasswordError.textContent =
-          userPasswordIsValidMessage !== 'valid'
-            ? userPasswordIsValidMessage
-            : '';
-      } else {
-        this.userNameError.textContent =
-          userNameIsValidMessage !== 'valid' ? userNameIsValidMessage : '';
-        this.userPasswordError.textContent =
-          userPasswordIsValidMessage !== 'valid'
-            ? userPasswordIsValidMessage
-            : '';
-      }
-    });
-  }
-}
-
-/**
- * @class Controller
- *
- * Links the user input and the view output.
- *
- * @param model
- * @param view
- */
-class LoginController {
-  constructor(model, view) {
-    this.model = model;
-    this.view = view;
-
-    this.view.bindValidateUserData(this.handleValidateUserData);
-    this.view.bindLoginUser(this.handleLoginUser);
+  bindLoginUser(handleLoginUser) {
+    if (!this.autoLogin) {
+      this.form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const user = {
+          userName: this.#userName,
+          userPassword: this.#userPassword,
+        };
+        this.#displayUserAfterLogin(handleLoginUser, user);
+      });
+    } else {
+      this.#displayUserAfterLogin(handleLoginUser, {});
+    }
   }
 
-  handleLoginUser = (userProp) => {
-    this.model.loginUser(userProp);
-  };
+  #validateUserData(handleValidateUserData) {
+    const user = {
+      userName: this.#userName,
+      userPassword: this.#userPassword,
+    };
 
-  handleValidateUserData = (user) => {
-    return this.model.validateUserData(user);
-  };
+    const {
+      userNameIsValidMessage,
+      userPasswordIsValidMessage,
+    } = handleValidateUserData(user);
+    // If the error notifications are the same, the error is displayed only after password input
+    if (userNameIsValidMessage === userPasswordIsValidMessage) {
+      this.userPasswordError.textContent =
+        userPasswordIsValidMessage !== 'valid'
+          ? userPasswordIsValidMessage
+          : '';
+    } else {
+      this.userNameError.textContent =
+        userNameIsValidMessage !== 'valid' ? userNameIsValidMessage : '';
+      this.userPasswordError.textContent =
+        userPasswordIsValidMessage !== 'valid'
+          ? userPasswordIsValidMessage
+          : '';
+    }
+  }
+
+  // If there is automatic logging then skip listening and run validation from the model
+  bindValidateUserData(handleValidateUserData) {
+    if (!this.autoLogin) {
+      this.form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        this.#validateUserData(handleValidateUserData);
+      });
+    } else {
+      this.#validateUserData(handleValidateUserData);
+    }
+  }
 }
-
-const loginInitApp = new LoginController(new LoginModel(), new LoginView());
