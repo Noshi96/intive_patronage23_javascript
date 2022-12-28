@@ -138,6 +138,10 @@ class LoginModel {
       this.#logout();
     }
   }
+
+  switchViewToTransactions() {
+    new TransactionsController(new TransactionsModel(), new TransactionsView());
+  }
 }
 
 /**
@@ -255,7 +259,7 @@ class LoginView {
     });
   }
 
-  bindLoginUser(handleLoginUser) {
+  bindLoginUser(handleLoginUser, handleSwitchViewToTransactions) {
     if (!this.autoLogin) {
       this.form.addEventListener('submit', (event) => {
         event.preventDefault();
@@ -264,9 +268,11 @@ class LoginView {
           userPassword: this.#userPassword,
         };
         this.#displayUserAfterLogin(handleLoginUser, user);
+        handleSwitchViewToTransactions();
       });
     } else {
       this.#displayUserAfterLogin(handleLoginUser, {});
+      handleSwitchViewToTransactions();
     }
   }
 

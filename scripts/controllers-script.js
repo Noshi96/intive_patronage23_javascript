@@ -1,7 +1,9 @@
+'use strict';
+
 let globalLoginController = null;
 let globalRegisterController = null;
 /**
- * @class Controller
+ * @class LoginController
  *
  * Links the user input and the view output.
  *
@@ -16,7 +18,10 @@ class LoginController {
     this.registeredUser = registeredUser;
 
     this.view.bindValidateUserData(this.handleValidateUserData);
-    this.view.bindLoginUser(this.handleLoginUser);
+    this.view.bindLoginUser(
+      this.handleLoginUser,
+      this.handleSwitchViewToTransactions
+    );
     this.view.bindLogoutUser(this.handleLogoutUser);
   }
 
@@ -35,10 +40,14 @@ class LoginController {
   handleLogoutUser = () => {
     this.model.logoutUser();
   };
+
+  handleSwitchViewToTransactions = () => {
+    this.model.switchViewToTransactions();
+  };
 }
 
 /**
- * @class Controller
+ * @class RegisterController
  *
  * Links the user input and the view output.
  *
@@ -63,6 +72,29 @@ class RegisterController {
   };
 }
 
+/**
+ * @class TransactionsController
+ *
+ * Links the user input and the view output.
+ *
+ * @param model
+ * @param view
+ */
+class TransactionsController {
+  constructor(model, view) {
+    this.model = model;
+    this.view = view;
+  }
+}
+
+/**
+ * @class InitialController
+ *
+ * Links the user input and the view output.
+ *
+ * @param model
+ * @param view
+ */
 class InitialController {
   constructor(model, view) {
     this.model = model;
