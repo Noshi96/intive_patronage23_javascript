@@ -4,7 +4,6 @@
 
 body {
   font-family: 'Open Sans', sans-serif;
-  background: #F7F7F7;
   height: 100vh;
   margin: 0;
   background-image: url('/../img/pexels-adam-krypel-64989941.webp');  /*from www.pexels.com*/
@@ -41,6 +40,10 @@ p {
   color: #F7F7F7;
   text-shadow: 2px 2px #000000;
   font-weight: 700;
+}
+
+.hide {
+  display: none !important;
 }
 
 @media only screen and (min-width: 769px) {

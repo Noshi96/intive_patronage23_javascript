@@ -69,6 +69,8 @@ class InitialController {
     this.view = view;
     this.view.bindInitRegister(this.handlerInitRegister);
     this.view.bindInitLogin(this.handlerInitLogin);
+    this.currentLoggedInUser =
+      JSON.parse(localStorage.getItem('currentLoggedInUser')) || null;
   }
   handlerInitRegister = () => {
     this.model.initRegister();
@@ -78,7 +80,20 @@ class InitialController {
   };
 }
 
-// Initiation
+// initialization
 document.addEventListener('DOMContentLoaded', () => {
-  new InitialController(new InitialModel(), new InitialView());
+  const initialController = new InitialController(
+    new InitialModel(),
+    new InitialView()
+  );
+
+  // Automatic login if u are logged in
+  if (initialController.currentLoggedInUser) {
+    const { currentLoggedInUser } = initialController;
+    new LoginController(
+      new LoginModel(true),
+      new LoginView(true, currentLoggedInUser),
+      currentLoggedInUser
+    );
+  }
 });

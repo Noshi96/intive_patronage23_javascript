@@ -195,6 +195,13 @@ class RegisterView {
     this.app = document.querySelector('#root');
     this.app.innerHTML = '';
 
+    this.registerNavButton = document.getElementById('register-nav-button');
+    this.loginNavButton = document.getElementById('login-nav-button');
+    this.registerNavButton.style.visibility = 'hidden';
+    this.loginNavButton.style.visibility = 'visible ';
+    this.registerNavButton.classList.add('hide');
+    this.loginNavButton.classList.remove('hide');
+
     this.formContainer = this.createElement('div');
     this.formContainer.classList.add('form-container');
 

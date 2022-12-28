@@ -45,11 +45,11 @@ class InitialView {
     this.initialContainer.classList.add('initial-container');
     this.headerNav.innerHTML = `
       <ul class="nav-list-non-logged">
-        <li class="button-style" id="register-nav-button">
-          ${registerText}
-        </li>
         <li class="button-style" id="login-nav-button">
           ${loginText}
+        </li>
+        <li class="button-style" id="register-nav-button">
+          ${registerText}
         </li>
       </ul>
     `;

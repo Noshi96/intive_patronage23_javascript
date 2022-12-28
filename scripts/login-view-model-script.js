@@ -29,6 +29,10 @@ class LoginModel {
   #userLoggedIn = false;
   #isUserDataValid = false;
 
+  #commitCurrentLoggedInUser(user) {
+    localStorage.setItem('currentLoggedInUser', JSON.stringify(user));
+  }
+
   #validateUserName(name) {
     const emailRegExp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
     const isEmailValid = name.match(emailRegExp);
@@ -95,6 +99,15 @@ class LoginModel {
     this.#isUserDataValid =
       userNameIsValidMessage === 'valid' &&
       userPasswordIsValidMessage === 'valid';
+
+    if (this.#isUserDataValid) {
+      const loggedInUser = {
+        userName,
+        userPassword,
+      };
+      this.#commitCurrentLoggedInUser(loggedInUser);
+    }
+
     return {
       userNameIsValidMessage,
       userPasswordIsValidMessage,
@@ -107,11 +120,13 @@ class LoginModel {
   }
 
   #logout() {
+    this.#commitCurrentLoggedInUser(null);
     new InitialController(new InitialModel(), new InitialView());
     this.#userLoggedIn = false;
   }
 
-  loginUser({ userName }) {
+  loginUser(user) {
+    const { userName } = user;
     if (this.#isUserDataValid) {
       this.#isUserDataValid = false;
       return this.#login(userName);
@@ -140,6 +155,13 @@ class LoginView {
     if (!this.autoLogin) {
       this.app.innerHTML = '';
     }
+
+    this.registerNavButton = document.getElementById('register-nav-button');
+    this.loginNavButton = document.getElementById('login-nav-button');
+    this.registerNavButton.style.visibility = 'visible';
+    this.loginNavButton.style.visibility = 'hidden ';
+    this.registerNavButton.classList.remove('hide');
+    this.loginNavButton.classList.add('hide');
 
     this.formContainer = this.createElement('div');
     this.formContainer.classList.add('form-container');
@@ -190,7 +212,6 @@ class LoginView {
     this.logoutButton.textContent = logoutText;
 
     this.navListLoggedIn = this.createElement('ul', 'nav-list-logged-in');
-    this.navListNonLogged = this.createElement('ul', 'nav-list-non-logged');
 
     this.loggedName = document.createElement('li');
     this.loggedName.setAttribute('id', 'logged-name');
