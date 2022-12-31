@@ -2,6 +2,7 @@
 
 let globalLoginController = null;
 let globalRegisterController = null;
+let globalStateLanguage = 'pl';
 /**
  * @class LoginController
  *
@@ -11,8 +12,9 @@ let globalRegisterController = null;
  * @param view
  * @param registeredUser Optional parameter if you want to log in right after registration
  */
-class LoginController {
+class LoginController extends TranslationController {
   constructor(model, view, registeredUser) {
+    super(model, view);
     this.model = model;
     this.view = view;
     this.registeredUser = registeredUser;
@@ -23,6 +25,7 @@ class LoginController {
       this.handleSwitchViewToTransactions
     );
     this.view.bindLogoutUser(this.handleLogoutUser);
+    this.view.bindLanguageChange(this.handleLanguageChange);
   }
 
   handleValidateUserData = (user) => {
@@ -54,8 +57,9 @@ class LoginController {
  * @param model
  * @param view
  */
-class RegisterController {
+class RegisterController extends TranslationController {
   constructor(model, view) {
+    super(model, view);
     this.model = model;
     this.view = view;
 
@@ -80,11 +84,18 @@ class RegisterController {
  * @param model
  * @param view
  */
-class TransactionsController {
+class TransactionsController extends TranslationController {
   constructor(model, view) {
+    super(model, view);
     this.model = model;
     this.view = view;
+    this.view.bindLanguageChange(this.handleLanguageChange);
+    // this.view.bindShowData(this.handlerGetTransactionsData);
   }
+
+  // handlerGetTransactionsData = () => {
+  //   return this.model.getTransactionsData();
+  // };
 }
 
 /**
@@ -95,12 +106,14 @@ class TransactionsController {
  * @param model
  * @param view
  */
-class InitialController {
+class InitialController extends TranslationController {
   constructor(model, view) {
+    super(model, view);
     this.model = model;
     this.view = view;
     this.view.bindInitRegister(this.handlerInitRegister);
     this.view.bindInitLogin(this.handlerInitLogin);
+    this.view.bindLanguageChange(this.handleLanguageChange);
     this.currentLoggedInUser =
       JSON.parse(localStorage.getItem('currentLoggedInUser')) || null;
   }
@@ -121,11 +134,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Automatic login if u are logged in
   if (initialController.currentLoggedInUser) {
-    const { currentLoggedInUser } = initialController;
-    new LoginController(
-      new LoginModel(true),
-      new LoginView(true, currentLoggedInUser),
-      currentLoggedInUser
-    );
+    // const { currentLoggedInUser } = initialController;
+    // new LoginController(
+    //   new LoginModel(true),
+    //   new LoginView(true, currentLoggedInUser),
+    //   currentLoggedInUser
+    // );
   }
 });

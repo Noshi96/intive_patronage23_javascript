@@ -1,36 +1,13 @@
 'use strict';
 
-const registerTitle = 'Zarejestruj się';
-const registerButtonText = 'Zarejestruj';
-
-// const userNameInputLabel = 'Nazwa użytkownika';
-// const userPasswordInputLabel = 'Hasło';
-const userEmailInputLabel = 'Email';
-const userEmailConfirmationInputLabel = 'Potwierdź email';
-
-const userNameInputText = 'Utwórz nazwę użytkownika';
-const userPasswordInputText = 'Utwórz hasło';
-const userEmailInputText = 'Podaj adres e-mail';
-const userEmailConfirmationInputText = 'Wpisz e-mail ponownie';
-
-const isUserNameValidText =
-  'The user name must not contain forbidden characters.';
-const isUserNameDuplicatedText = 'Duplicated user name.';
-const isEnoughLettersText = 'Not enough characters.';
-const isEnoughDigitsText = 'Not enough digits.';
-
-const isEmailValidText = 'Wrong email format.';
-const isDuplicatedEmailWithAliasText = 'Duplicated email with alias.';
-const isDuplicatedEmailText = 'Duplicated email.';
-const isEmailAndConfirmEmailValidText = 'Confirm email is different then email';
-
 /**
  * @class RegisterModel
  *
  * Manages the data of the application.
  */
-class RegisterModel {
+class RegisterModel extends TranslationModel {
   constructor() {
+    super();
     this.users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
   }
 
@@ -190,8 +167,13 @@ class RegisterModel {
  *
  * Visual representation of the model.
  */
-class RegisterView {
+class RegisterView extends TranslationModel {
   constructor() {
+    super('pl');
+    this.initView();
+  }
+
+  initView() {
     this.app = document.querySelector('#root');
     this.app.innerHTML = '';
 

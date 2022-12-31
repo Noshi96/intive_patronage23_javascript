@@ -1,18 +1,14 @@
 'use strict';
 
-const initialText =
-  'Weź udział i zarejestruj się już teraz, żeby nie stracić okazji. Promocja z ograniczonym czasem. Śpiesz się! Bądź pierwszy! Zarejestruj się!';
-
-const registerText = 'Rejestracja';
-const loginText = 'Logowanie';
-
 /**
  * @class InitialModel
  *
  * Manages the data of the application.
  */
-class InitialModel {
-  constructor() {}
+class InitialModel extends TranslationModel {
+  constructor() {
+    super();
+  }
 
   initRegister() {
     globalRegisterController = new RegisterController(
@@ -33,36 +29,48 @@ class InitialModel {
  *
  * Visual representation of the model.
  */
-class InitialView {
+class InitialView extends TranslationView {
   constructor() {
+    super(globalStateLanguage);
+    this.initView();
+  }
+
+  initView = () => {
     this.app = document.querySelector('#root');
     this.header = document.querySelector('.header');
     this.headerNav = this.createElement('nav', 'header-nav');
-    this.app.innerHTML = '';
-    this.header.innerHTML = '';
-
     this.initialContainer = this.createElement('div');
     this.initialContainer.classList.add('initial-container');
+    this.app.innerHTML = '';
+    this.header.innerHTML = '';
     this.headerNav.innerHTML = `
-      <ul class="nav-list-non-logged">
-        <li class="button-style" id="login-nav-button">
-          ${loginText}
-        </li>
-        <li class="button-style" id="register-nav-button">
-          ${registerText}
-        </li>
-      </ul>
-    `;
+    <ul class="nav-list-non-logged">
+      <li class="button-style" id="login-nav-button">
+        ${this.translation.loginText}
+      </li>
+      <li class="button-style" id="register-nav-button">
+        ${this.translation.registerText}
+      </li>
+    </ul>
+  `;
 
     this.initialContainer.innerHTML = `
-      <div class="initial-container">
-       <p>${initialText}</p>
-      </div>
+       <p>${this.translation.initialText}</p>
     `;
 
     this.header.append(this.headerNav);
     this.app.append(this.initialContainer);
-  }
+
+    this.languageDiv = this.createElement('div', 'language-div');
+    this.languageDiv.innerHTML = `
+        <button id="change-language">${this.language}</button>
+    `;
+
+    this.headerNav.append(this.languageDiv);
+    this.changeLanguageButton = this.languageDiv.querySelector(
+      '#change-language'
+    );
+  };
 
   createElement(tag, className) {
     const element = document.createElement(tag);
@@ -85,5 +93,21 @@ class InitialView {
       .addEventListener('click', () => {
         handleInitLogin();
       });
+  }
+
+  bindLanguageChange(handleLanguageChange) {
+    this.changeLanguageButton.addEventListener('click', () => {
+      if (this.language === 'pl') {
+        this.language = 'en';
+        globalStateLanguage = 'en';
+      } else {
+        this.language = 'pl';
+        globalStateLanguage = 'pl';
+      }
+      this.translation = handleLanguageChange(this.language);
+      this.changeLanguageButton.textContent = this.language;
+      console.log('initial');
+      new InitialController(new InitialModel(), new InitialView());
+    });
   }
 }

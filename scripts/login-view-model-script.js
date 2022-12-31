@@ -1,27 +1,13 @@
 'use strict';
 
-const loginTitle = 'Zaloguj się';
-const loginButtonText = 'Zaloguj';
-
-const incentiveToOpenAccountText =
-  'Załóż konto na tego maila klikając w Rejestracja.';
-const incorrectPasswordOrUsername = 'Incorrect password or user name.';
-
-const userNameInputLabel = 'Nazwa użytkownika';
-const userPasswordInputLabel = 'Hasło';
-
-const userNameInputLoginText = 'Podaj nazwę użytkownika';
-const userPasswordInputLoginText = 'Podaj hasło';
-
-const logoutText = 'Wyloguj';
-
 /**
  * @class LoginModel
  *
  * Manages the data of the application.
  */
-class LoginModel {
+class LoginModel extends TranslationModel {
   constructor(autoLogin = false) {
+    super();
     this.autoLogin = autoLogin;
     this.users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
   }
@@ -149,10 +135,14 @@ class LoginModel {
  *
  * Visual representation of the model.
  */
-class LoginView {
+class LoginView extends TranslationView {
   constructor(autoLogin = false) {
+    super(globalStateLanguage);
     this.autoLogin = autoLogin;
+    this.initView();
+  }
 
+  initView() {
     this.app = document.querySelector('#root');
     this.headerNav = document.querySelector('.header-nav');
     // If there is switch don't clear
@@ -171,14 +161,14 @@ class LoginView {
     this.formContainer.classList.add('form-container');
 
     this.formContainer.innerHTML = `
-      <h1 class="form-title">${loginTitle}</h1>
+      <h1 class="form-title">${this.translation.loginTitle}</h1>
       <form class="form-style">
         <div class="single-input">
-          <label for="user-name">${userNameInputLabel}</label>
+          <label for="user-name">${this.translation.userNameInputLabel}</label>
           <input
             id="username"
             type="text"
-            placeholder="${userNameInputLoginText}"
+            placeholder="${this.translation.userNameInputLoginText}"
             name="user-name"
             required 
             minlength="6"
@@ -187,18 +177,18 @@ class LoginView {
           <span class="error-user-name error" aria-live="polite"></span>
         </div>
         <div class="single-input">
-          <label for="user-password">${userPasswordInputLabel}</label>
+          <label for="user-password">${this.translation.userPasswordInputLabel}</label>
           <input
             id="password"
             type="password"
-            placeholder="${userPasswordInputLoginText}"
+            placeholder="${this.translation.userPasswordInputLoginText}"
             name="user-password"
             required 
             minlength="6"
           />
           <span class="error-user-password error" aria-live="polite"></span>
         </div>
-        <button class="form-button">${loginButtonText}</button>
+        <button class="form-button">${this.translation.loginButtonText}</button>
       </form>
     `;
 
@@ -213,7 +203,7 @@ class LoginView {
     this.logoutButton = document.createElement('li');
     this.logoutButton.setAttribute('id', 'log-out');
     this.logoutButton.classList.add('button-style');
-    this.logoutButton.textContent = logoutText;
+    this.logoutButton.textContent = this.translation.logoutText;
 
     this.navListLoggedIn = this.createElement('ul', 'nav-list-logged-in');
 
@@ -224,6 +214,13 @@ class LoginView {
     if (!this.autoLogin) {
       this.app.append(this.formContainer);
     }
+
+    this.languageDiv = this.createElement('div', 'language-div');
+    this.languageDiv.innerHTML = `
+        <button id="change-language">${this.language}</button>
+    `;
+
+    this.changeLanguageButton = document.querySelector('#change-language');
   }
 
   get #userName() {
@@ -240,7 +237,11 @@ class LoginView {
     return element;
   }
 
-  #displayUserAfterLogin(handleLoginUser, user) {
+  #displayUserAfterAndSwitchToTransactions(
+    handleLoginUser,
+    user,
+    handleSwitchViewToTransactions
+  ) {
     const name = handleLoginUser(user);
     if (name) {
       this.loggedName.textContent = name;
@@ -248,6 +249,7 @@ class LoginView {
       this.navListLoggedIn.append(this.logoutButton);
       this.headerNav.innerHTML = '';
       this.headerNav.append(this.navListLoggedIn);
+      handleSwitchViewToTransactions();
     }
   }
 
@@ -267,12 +269,18 @@ class LoginView {
           userName: this.#userName,
           userPassword: this.#userPassword,
         };
-        this.#displayUserAfterLogin(handleLoginUser, user);
-        handleSwitchViewToTransactions();
+        this.#displayUserAfterAndSwitchToTransactions(
+          handleLoginUser,
+          user,
+          handleSwitchViewToTransactions
+        );
       });
     } else {
-      this.#displayUserAfterLogin(handleLoginUser, {});
-      handleSwitchViewToTransactions();
+      this.#displayUserAfterAndSwitchToTransactions(
+        handleLoginUser,
+        {},
+        handleSwitchViewToTransactions
+      );
     }
   }
 
@@ -312,5 +320,21 @@ class LoginView {
     } else {
       this.#validateUserData(handleValidateUserData);
     }
+  }
+
+  bindLanguageChange(handleLanguageChange) {
+    document.querySelector('#change-language').addEventListener('click', () => {
+      if (this.language === 'pl') {
+        this.language = 'en';
+        globalStateLanguage = 'en';
+      } else {
+        this.language = 'pl';
+        globalStateLanguage = 'pl';
+      }
+      this.translation = handleLanguageChange(this.language);
+      this.changeLanguageButton.textContent = this.language;
+      console.log('login view');
+      new LoginController(new LoginModel(), new LoginView());
+    });
   }
 }
