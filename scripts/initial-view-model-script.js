@@ -63,7 +63,9 @@ class InitialView extends TranslationView {
 
     this.languageDiv = this.createElement('div', 'language-div');
     this.languageDiv.innerHTML = `
-        <button id="change-language">${this.language}</button>
+        <button id="change-language">${
+          this.language === 'en' ? 'pl' : 'en'
+        }</button>
     `;
 
     this.headerNav.append(this.languageDiv);

@@ -9,7 +9,7 @@
 
 // const incentiveToOpenAccountText =
 //   'Załóż konto na tego maila klikając w Rejestracja.';
-const incorrectPasswordOrUsername = 'Incorrect password or user name.';
+//const incorrectPasswordOrUsername = 'Incorrect password or user name.';
 
 // const userNameInputLabel = 'Nazwa użytkownika';
 // const userPasswordInputLabel = 'Hasło';

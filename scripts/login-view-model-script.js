@@ -10,9 +10,11 @@ class LoginModel extends TranslationModel {
     super();
     this.autoLogin = autoLogin;
     this.users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+    this.incorrectPasswordOrUsername = 'Incorrect password or user name.';
+    this.incentiveToOpenAccountText =
+      'Create an account for this email by clicking on Sign up.';
   }
 
-  #userLoggedIn = false;
   #isUserDataValid = false;
 
   #commitCurrentLoggedInUser(user) {
@@ -28,10 +30,10 @@ class LoginModel extends TranslationModel {
     );
 
     if (existingUser.length !== 1 && isEmailValid) {
-      return incentiveToOpenAccountText;
+      return this.incentiveToOpenAccountText;
     }
     if (existingUser.length !== 1) {
-      return incorrectPasswordOrUsername;
+      return this.incorrectPasswordOrUsername;
     }
 
     return 'valid';
@@ -43,7 +45,7 @@ class LoginModel extends TranslationModel {
     );
 
     if (existingUser.length !== 1) {
-      return incorrectPasswordOrUsername;
+      return this.incorrectPasswordOrUsername;
     }
 
     const incomingUserHashPassword = this.#hashUserPassword(password);
@@ -53,7 +55,7 @@ class LoginModel extends TranslationModel {
       incomingUserHashPassword.toString();
 
     if (!isPasswordValid) {
-      return incorrectPasswordOrUsername;
+      return this.incorrectPasswordOrUsername;
     }
 
     return 'valid';
@@ -101,14 +103,7 @@ class LoginModel extends TranslationModel {
   }
 
   #login(userName) {
-    this.#userLoggedIn = true;
     return userName;
-  }
-
-  #logout() {
-    this.#commitCurrentLoggedInUser(null);
-    new InitialController(new InitialModel(), new InitialView());
-    this.#userLoggedIn = false;
   }
 
   loginUser(user) {
@@ -119,14 +114,11 @@ class LoginModel extends TranslationModel {
     }
   }
 
-  logoutUser() {
-    if (this.#userLoggedIn) {
-      this.#logout();
-    }
-  }
-
-  switchViewToTransactions() {
-    new TransactionsController(new TransactionsModel(), new TransactionsView());
+  switchViewToTransactions(name) {
+    new TransactionsController(
+      new TransactionsModel(),
+      new TransactionsView(name)
+    );
   }
 }
 
@@ -200,25 +192,10 @@ class LoginView extends TranslationView {
       '.error-user-password'
     );
 
-    this.logoutButton = document.createElement('li');
-    this.logoutButton.setAttribute('id', 'log-out');
-    this.logoutButton.classList.add('button-style');
-    this.logoutButton.textContent = this.translation.logoutText;
-
-    this.navListLoggedIn = this.createElement('ul', 'nav-list-logged-in');
-
-    this.loggedName = document.createElement('li');
-    this.loggedName.setAttribute('id', 'logged-name');
-
     // If there is switch don't append
     if (!this.autoLogin) {
       this.app.append(this.formContainer);
     }
-
-    this.languageDiv = this.createElement('div', 'language-div');
-    this.languageDiv.innerHTML = `
-        <button id="change-language">${this.language}</button>
-    `;
 
     this.changeLanguageButton = document.querySelector('#change-language');
   }
@@ -244,21 +221,8 @@ class LoginView extends TranslationView {
   ) {
     const name = handleLoginUser(user);
     if (name) {
-      this.loggedName.textContent = name;
-      this.navListLoggedIn.append(this.loggedName);
-      this.navListLoggedIn.append(this.logoutButton);
-      this.headerNav.innerHTML = '';
-      this.headerNav.append(this.navListLoggedIn);
-      handleSwitchViewToTransactions();
+      handleSwitchViewToTransactions(name);
     }
-  }
-
-  bindLogoutUser(handleLogoutUser) {
-    this.logoutButton.addEventListener('click', (event) => {
-      event.preventDefault();
-      this.navListLoggedIn.innerHTML = '';
-      handleLogoutUser();
-    });
   }
 
   bindLoginUser(handleLoginUser, handleSwitchViewToTransactions) {
@@ -298,14 +262,16 @@ class LoginView extends TranslationView {
     if (userNameIsValidMessage === userPasswordIsValidMessage) {
       this.userPasswordError.textContent =
         userPasswordIsValidMessage !== 'valid'
-          ? userPasswordIsValidMessage
+          ? this.translation.incorrectPasswordOrUsername
           : '';
     } else {
       this.userNameError.textContent =
-        userNameIsValidMessage !== 'valid' ? userNameIsValidMessage : '';
+        userNameIsValidMessage !== 'valid'
+          ? this.translation.incentiveToOpenAccountText
+          : '';
       this.userPasswordError.textContent =
         userPasswordIsValidMessage !== 'valid'
-          ? userPasswordIsValidMessage
+          ? this.translation.incorrectPasswordOrUsername
           : '';
     }
   }

@@ -10,6 +10,8 @@ class TransactionsModel extends TranslationModel {
   #transactionsAccessToken = '$2b$10$5pBRUbFRKdKft/b8qSQ3IeyPQgQ8CLXlvgoQA6GdpYvdWva.pOfGS';
   #HTTPRequestMethod = 'GET';
 
+  #userLoggedIn = false;
+
   constructor() {
     super();
   }
@@ -24,6 +26,19 @@ class TransactionsModel extends TranslationModel {
     });
     return await transactionsResponse.json();
   }
+
+  #commitCurrentLoggedInUser(user) {
+    localStorage.setItem('currentLoggedInUser', JSON.stringify(user));
+  }
+
+  #logout() {
+    this.#commitCurrentLoggedInUser(null);
+    new InitialController(new InitialModel(), new InitialView());
+  }
+
+  logoutUser() {
+    this.#logout();
+  }
 }
 
 /**
@@ -32,8 +47,9 @@ class TransactionsModel extends TranslationModel {
  * Visual representation of the model.
  */
 class TransactionsView extends TranslationView {
-  constructor() {
+  constructor(userName) {
     super(globalStateLanguage);
+    this.userName = userName;
     this.initView();
   }
 
@@ -44,10 +60,30 @@ class TransactionsView extends TranslationView {
     this.headerNav = document.querySelector('.header-nav');
     this.languageDiv = this.createElement('div', 'language-div');
     this.languageDiv.innerHTML = `
-        <button id="change-language">${this.language}</button>
+    <button id="change-language">${
+      this.language === 'en' ? 'pl' : 'en'
+    }</button>
     `;
-    this.headerNav.append(this.languageDiv);
+
+    this.navListLoggedIn = this.createElement('ul', 'nav-list-logged-in');
+
+    this.loggedName = document.createElement('li');
+    this.loggedName.setAttribute('id', 'logged-name');
+
     this.changeLanguageButton = document.querySelector('#change-language');
+
+    this.logoutButton = document.createElement('li');
+    this.logoutButton.setAttribute('id', 'log-out');
+    this.logoutButton.classList.add('button-style');
+    this.logoutButton.textContent = this.translation.logoutText;
+
+    this.loggedName.textContent = this.userName;
+    this.navListLoggedIn.append(this.loggedName);
+    this.navListLoggedIn.append(this.logoutButton);
+    this.headerNav.innerHTML = '';
+    this.headerNav.append(this.navListLoggedIn);
+    this.headerNav.append(this.languageDiv);
+
     console.log('init transactions');
   }
 
@@ -61,6 +97,14 @@ class TransactionsView extends TranslationView {
     if (className) element.classList.add(className);
 
     return element;
+  }
+
+  bindLogoutUser(handleLogoutUser) {
+    this.logoutButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      this.navListLoggedIn.innerHTML = '';
+      handleLogoutUser();
+    });
   }
 
   bindLanguageChange(handleLanguageChange) {
@@ -77,7 +121,7 @@ class TransactionsView extends TranslationView {
       console.log('transactions view');
       new TransactionsController(
         new TransactionsModel(),
-        new TransactionsView()
+        new TransactionsView(this.userName)
       );
     });
   }

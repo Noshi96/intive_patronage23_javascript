@@ -167,7 +167,7 @@ class RegisterModel extends TranslationModel {
  *
  * Visual representation of the model.
  */
-class RegisterView extends TranslationModel {
+class RegisterView extends TranslationView {
   constructor() {
     super('pl');
     this.initView();
@@ -188,14 +188,14 @@ class RegisterView extends TranslationModel {
     this.formContainer.classList.add('form-container');
 
     this.formContainer.innerHTML = `
-      <h1 class="form-title">${registerTitle}</h1>
+      <h1 class="form-title">${this.translation.registerTitle}</h1>
       <form class="form-style">
         <div class="single-input">
-          <label for="user-name">${userNameInputLabel}</label>
+          <label for="user-name">${this.translation.userNameInputLabel}</label>
           <input
             id="username"
             type="text"
-            placeholder="${userNameInputText}"
+            placeholder="${this.translation.userNameInputText}"
             name="user-name"
             required 
             minlength="6"
@@ -204,11 +204,11 @@ class RegisterView extends TranslationModel {
           <span class="error-user-name error" aria-live="polite"></span>
         </div>
         <div class="single-input">
-          <label for="user-password">${userPasswordInputLabel}</label>
+          <label for="user-password">${this.translation.userPasswordInputLabel}</label>
           <input
             id="password"
             type="password"
-            placeholder="${userPasswordInputText}"
+            placeholder="${this.translation.userPasswordInputText}"
             name="user-password"
             required 
             minlength="6"
@@ -216,28 +216,28 @@ class RegisterView extends TranslationModel {
           <span class="error-user-password error" aria-live="polite"></span>
         </div>
         <div class="single-input">
-          <label for="user-email">${userEmailInputLabel}</label>
+          <label for="user-email">${this.translation.userEmailInputLabel}</label>
           <input
             id="email"
             type="email"
-            placeholder="${userEmailInputText}"
+            placeholder="${this.translation.userEmailInputText}"
             name="user-email"
             required
           />
           <span class="error-user-email error" aria-live="polite"></span>
         </div>
         <div class="single-input">
-          <label for="user-confirm-email">${userEmailConfirmationInputLabel}</label>
+          <label for="user-confirm-email">${this.translation.userEmailConfirmationInputLabel}</label>
           <input
-            id="confirmemail"
+            id="confirm-email"
             type="email"
-            placeholder="${userEmailConfirmationInputText}"
+            placeholder="${this.translation.userEmailConfirmationInputText}"
             name="user-confirm-email"
             required
           />
           <span class="error-user-confirm-email error" aria-live="polite"></span>
         </div>
-        <button class="form-button">${registerButtonText}</button>
+        <button class="form-button">${this.translation.registerButtonText}</button>
       </form>
     `;
 
@@ -247,7 +247,7 @@ class RegisterView extends TranslationModel {
     this.userPassword = this.formContainer.querySelector('#password');
     this.userEmail = this.formContainer.querySelector('#email');
     this.userEmailError = this.formContainer.querySelector('.error-user-email');
-    this.userConfirmEmail = this.formContainer.querySelector('#confirmemail');
+    this.userConfirmEmail = this.formContainer.querySelector('#confirm-email');
     this.userConfirmEmailError = this.formContainer.querySelector(
       '.error-user-confirm-email'
     );
@@ -311,6 +311,22 @@ class RegisterView extends TranslationModel {
         userConfirmEmailIsValidMessage !== 'valid'
           ? userConfirmEmailIsValidMessage
           : '';
+    });
+  }
+
+  bindLanguageChange(handleLanguageChange) {
+    document.querySelector('#change-language').addEventListener('click', () => {
+      if (this.language === 'pl') {
+        this.language = 'en';
+        globalStateLanguage = 'en';
+      } else {
+        this.language = 'pl';
+        globalStateLanguage = 'pl';
+      }
+      this.translation = handleLanguageChange(this.language);
+      this.changeLanguageButton.textContent = this.language;
+      console.log('transactions view');
+      new RegisterController(new RegisterModel(), new RegisterView());
     });
   }
 }

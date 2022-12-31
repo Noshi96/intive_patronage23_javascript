@@ -24,7 +24,6 @@ class LoginController extends TranslationController {
       this.handleLoginUser,
       this.handleSwitchViewToTransactions
     );
-    this.view.bindLogoutUser(this.handleLogoutUser);
     this.view.bindLanguageChange(this.handleLanguageChange);
   }
 
@@ -40,12 +39,8 @@ class LoginController extends TranslationController {
       : this.model.loginUser(user);
   };
 
-  handleLogoutUser = () => {
-    this.model.logoutUser();
-  };
-
-  handleSwitchViewToTransactions = () => {
-    this.model.switchViewToTransactions();
+  handleSwitchViewToTransactions = (userName) => {
+    this.model.switchViewToTransactions(userName);
   };
 }
 
@@ -65,6 +60,7 @@ class RegisterController extends TranslationController {
 
     this.view.bindValidateUserData(this.handleValidateUserData);
     this.view.bindAddUser(this.handleAddUser);
+    this.view.bindLanguageChange(this.handleLanguageChange);
   }
 
   handleAddUser = (userProp) => {
@@ -90,12 +86,16 @@ class TransactionsController extends TranslationController {
     this.model = model;
     this.view = view;
     this.view.bindLanguageChange(this.handleLanguageChange);
+    this.view.bindLogoutUser(this.handleLogoutUser);
     // this.view.bindShowData(this.handlerGetTransactionsData);
   }
 
   // handlerGetTransactionsData = () => {
   //   return this.model.getTransactionsData();
   // };
+  handleLogoutUser = () => {
+    this.model.logoutUser();
+  };
 }
 
 /**
