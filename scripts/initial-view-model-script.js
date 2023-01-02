@@ -6,20 +6,20 @@
  * Manages the data of the application.
  */
 class InitialModel extends TranslationModel {
-  constructor() {
-    super();
+  constructor(language) {
+    super(language);
   }
 
   initRegister() {
     globalRegisterController = new RegisterController(
-      new RegisterModel(),
-      new RegisterView()
+      new RegisterModel(this.language),
+      new RegisterView(this.language)
     );
   }
   initLogin() {
     globalLoginController = new LoginController(
-      new LoginModel(),
-      new LoginView()
+      new LoginModel(false, this.language),
+      new LoginView(false, this.language)
     );
   }
 }
@@ -30,8 +30,8 @@ class InitialModel extends TranslationModel {
  * Visual representation of the model.
  */
 class InitialView extends TranslationView {
-  constructor() {
-    super(globalStateLanguage);
+  constructor(language) {
+    super(language);
     this.initView();
   }
 
@@ -98,7 +98,7 @@ class InitialView extends TranslationView {
       });
   }
 
-  bindLanguageChange(handleLanguageChange) {
+  bindLanguageChange() {
     this.changeLanguageButton.addEventListener('click', () => {
       if (this.language === 'pl') {
         this.language = 'en';
@@ -107,9 +107,11 @@ class InitialView extends TranslationView {
         this.language = 'pl';
         globalStateLanguage = 'pl';
       }
-      this.translation = handleLanguageChange(this.language);
       console.log('initial');
-      new InitialController(new InitialModel(), new InitialView());
+      new InitialController(
+        new InitialModel(this.language),
+        new InitialView(this.language)
+      );
     });
   }
 }

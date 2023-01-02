@@ -10,10 +10,8 @@ class TransactionsModel extends TranslationModel {
   #transactionsAccessToken = '$2b$10$5pBRUbFRKdKft/b8qSQ3IeyPQgQ8CLXlvgoQA6GdpYvdWva.pOfGS';
   #HTTPRequestMethod = 'GET';
 
-  #userLoggedIn = false;
-
-  constructor() {
-    super();
+  constructor(language) {
+    super(language);
   }
 
   async getTransactionsData() {
@@ -33,7 +31,10 @@ class TransactionsModel extends TranslationModel {
 
   #logout() {
     this.#commitCurrentLoggedInUser(null);
-    new InitialController(new InitialModel(), new InitialView());
+    new InitialController(
+      new InitialModel(this.language),
+      new InitialView(this.language)
+    );
   }
 
   logoutUser() {
@@ -47,8 +48,8 @@ class TransactionsModel extends TranslationModel {
  * Visual representation of the model.
  */
 class TransactionsView extends TranslationView {
-  constructor(userName) {
-    super(globalStateLanguage);
+  constructor(userName, language) {
+    super(language);
     this.userName = userName;
     this.initView();
   }
@@ -76,6 +77,7 @@ class TransactionsView extends TranslationView {
     this.logoutButton = document.createElement('li');
     this.logoutButton.setAttribute('id', 'log-out');
     this.logoutButton.classList.add('button-style');
+
     this.logoutButton.textContent = this.translation.logoutText;
 
     this.loggedName.textContent = this.userName;
@@ -108,21 +110,17 @@ class TransactionsView extends TranslationView {
     });
   }
 
-  bindLanguageChange(handleLanguageChange) {
+  bindLanguageChange() {
     document.querySelector('#change-language').addEventListener('click', () => {
-      this.changeLanguageButton.textContent = this.language;
       if (this.language === 'pl') {
         this.language = 'en';
-        globalStateLanguage = 'en';
       } else {
         this.language = 'pl';
-        globalStateLanguage = 'pl';
       }
-      this.translation = handleLanguageChange(this.language);
       console.log('transactions view');
       new TransactionsController(
         new TransactionsModel(),
-        new TransactionsView(this.userName)
+        new TransactionsView(this.userName, this.language)
       );
     });
   }

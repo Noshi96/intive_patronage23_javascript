@@ -91,31 +91,15 @@ const translationsJson = {
   pl,
 };
 
-// const translation = translateTo('pl');
-
-class TranslationController {
-  constructor(model, view) {
-    this.model = model;
-    this.view = view;
-  }
-  handleLanguageChange = (language) => {
-    return this.model.changeLanguage(language);
-  };
-}
-
 class TranslationModel {
-  constructor(language) {
+  constructor(language = 'pl') {
     this.language = language;
-    this.translation = this.changeLanguage(this.language);
+    this.translation = translationsJson[this.language] || {};
   }
-
-  changeLanguage = (language) => {
-    return translationsJson[language] || {};
-  };
 }
 
 class TranslationView {
-  constructor(language) {
+  constructor(language = 'pl') {
     this.language = language;
     this.translation = translationsJson[this.language] || {};
   }
@@ -123,6 +107,14 @@ class TranslationView {
     const changeLanguageButton = document.getElementById('change-language');
     if (changeLanguageButton) {
       changeLanguageButton.replaceWith(changeLanguageButton.cloneNode(true));
+    }
+    const registerNavButton = document.getElementById('register-nav-button');
+    if (registerNavButton) {
+      registerNavButton.replaceWith(registerNavButton.cloneNode(true));
+    }
+    const loginNavButton = document.getElementById('login-nav-button');
+    if (loginNavButton) {
+      loginNavButton.replaceWith(loginNavButton.cloneNode(true));
     }
   }
 }

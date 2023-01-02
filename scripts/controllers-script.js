@@ -12,19 +12,19 @@ let globalStateLanguage = 'pl';
  * @param view
  * @param registeredUser Optional parameter if you want to log in right after registration
  */
-class LoginController extends TranslationController {
+class LoginController {
   constructor(model, view, registeredUser) {
-    super(model, view);
     this.model = model;
     this.view = view;
     this.registeredUser = registeredUser;
 
-    this.view.bindLanguageChange(this.handleLanguageChange);
+    this.view.bindLanguageChange();
     this.view.bindValidateUserData(this.handleValidateUserData);
     this.view.bindLoginUser(
       this.handleLoginUser,
       this.handleSwitchViewToTransactions
     );
+    this.view.bindSwitchViewToRegister(this.handleSwitchViewToRegister);
   }
 
   handleValidateUserData = (user) => {
@@ -42,6 +42,10 @@ class LoginController extends TranslationController {
   handleSwitchViewToTransactions = (userName) => {
     this.model.switchViewToTransactions(userName);
   };
+
+  handleSwitchViewToRegister = () => {
+    this.model.switchViewToRegister();
+  };
 }
 
 /**
@@ -52,23 +56,27 @@ class LoginController extends TranslationController {
  * @param model
  * @param view
  */
-class RegisterController extends TranslationController {
+class RegisterController {
   constructor(model, view) {
-    super(model, view);
     this.model = model;
     this.view = view;
 
-    this.view.bindLanguageChange(this.handleLanguageChange);
+    this.view.bindLanguageChange();
     this.view.bindValidateUserData(this.handleValidateUserData);
     this.view.bindAddUser(this.handleAddUser);
+    this.view.bindSwitchViewToLogin(this.handleSwitchViewToLogin);
   }
 
-  handleAddUser = (userProp) => {
-    this.model.addUser(userProp);
+  handleAddUser = (user) => {
+    this.model.addUser(user);
   };
 
   handleValidateUserData = (user) => {
     return this.model.validateUserData(user);
+  };
+
+  handleSwitchViewToLogin = (autoLogin, language) => {
+    this.model.switchViewToLogin(autoLogin, language);
   };
 }
 
@@ -80,13 +88,12 @@ class RegisterController extends TranslationController {
  * @param model
  * @param view
  */
-class TransactionsController extends TranslationController {
+class TransactionsController {
   constructor(model, view) {
-    super(model, view);
     this.model = model;
     this.view = view;
 
-    this.view.bindLanguageChange(this.handleLanguageChange);
+    this.view.bindLanguageChange();
     this.view.bindLogoutUser(this.handleLogoutUser);
     // this.view.bindShowData(this.handlerGetTransactionsData);
   }
@@ -107,9 +114,8 @@ class TransactionsController extends TranslationController {
  * @param model
  * @param view
  */
-class InitialController extends TranslationController {
+class InitialController {
   constructor(model, view) {
-    super(model, view);
     this.model = model;
     this.view = view;
 

@@ -6,8 +6,8 @@
  * Manages the data of the application.
  */
 class RegisterModel extends TranslationModel {
-  constructor() {
-    super(globalStateLanguage);
+  constructor(language) {
+    super(language);
     this.users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
   }
 
@@ -39,8 +39,8 @@ class RegisterModel extends TranslationModel {
       // automatic login as soon as registration is correct
       const accessForAutoLogin = true;
       const loginController = new LoginController(
-        new LoginModel(accessForAutoLogin),
-        new LoginView(accessForAutoLogin, sameUserWithoutHash),
+        new LoginModel(accessForAutoLogin, this.language),
+        new LoginView(accessForAutoLogin, this.language),
         sameUserWithoutHash
       );
     }
@@ -162,6 +162,13 @@ class RegisterModel extends TranslationModel {
       userConfirmEmailIsValidMessage,
     };
   }
+
+  switchViewToLogin(autoLogin, language) {
+    new LoginController(
+      new LoginModel(autoLogin, language),
+      new LoginView(autoLogin, language)
+    );
+  }
 }
 
 /**
@@ -170,8 +177,8 @@ class RegisterModel extends TranslationModel {
  * Visual representation of the model.
  */
 class RegisterView extends TranslationView {
-  constructor() {
-    super(globalStateLanguage);
+  constructor(language) {
+    super(language);
     this.initView();
   }
 
@@ -321,19 +328,31 @@ class RegisterView extends TranslationView {
     });
   }
 
-  bindLanguageChange(handleLanguageChange) {
+  bindSwitchViewToLogin(handleSwitchViewToLogin) {
+    document
+      .querySelector('#login-nav-button')
+      .addEventListener('click', () => {
+        handleSwitchViewToLogin(false, this.language);
+      });
+  }
+
+  bindLanguageChange() {
     document.querySelector('#change-language').addEventListener('click', () => {
-      this.changeLanguageButton.textContent = this.language;
+      const buttonText = this.changeLanguageButton.textContent;
+      buttonText === 'en'
+        ? (this.changeLanguageButton.textContent = 'pl')
+        : (this.changeLanguageButton.textContent = 'en');
+
       if (this.language === 'pl') {
         this.language = 'en';
-        globalStateLanguage = 'en';
       } else {
         this.language = 'pl';
-        globalStateLanguage = 'pl';
       }
-      this.translation = handleLanguageChange(this.language);
       console.log('register view');
-      new RegisterController(new RegisterModel(), new RegisterView());
+      new RegisterController(
+        new RegisterModel(this.language),
+        new RegisterView(this.language)
+      );
     });
   }
 }

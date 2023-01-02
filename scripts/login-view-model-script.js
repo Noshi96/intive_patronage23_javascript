@@ -6,8 +6,8 @@
  * Manages the data of the application.
  */
 class LoginModel extends TranslationModel {
-  constructor(autoLogin = false) {
-    super(globalStateLanguage);
+  constructor(autoLogin = false, language) {
+    super(language);
     this.autoLogin = autoLogin;
     this.users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
   }
@@ -113,8 +113,15 @@ class LoginModel extends TranslationModel {
 
   switchViewToTransactions(name) {
     new TransactionsController(
-      new TransactionsModel(),
-      new TransactionsView(name)
+      new TransactionsModel(this.language),
+      new TransactionsView(name, this.language)
+    );
+  }
+
+  switchViewToRegister() {
+    new RegisterController(
+      new RegisterModel(this.language),
+      new RegisterView(this.language)
     );
   }
 }
@@ -125,8 +132,8 @@ class LoginModel extends TranslationModel {
  * Visual representation of the model.
  */
 class LoginView extends TranslationView {
-  constructor(autoLogin = false) {
-    super(globalStateLanguage);
+  constructor(autoLogin = false, language) {
+    super(language);
     this.autoLogin = autoLogin;
     this.initView();
   }
@@ -285,9 +292,19 @@ class LoginView extends TranslationView {
     }
   }
 
-  bindLanguageChange(handleLanguageChange) {
+  bindSwitchViewToRegister(handleSwitchViewToRegister) {
+    const registerNavButton = document.querySelector('#register-nav-button');
+    if (registerNavButton)
+      registerNavButton.addEventListener('click', handleSwitchViewToRegister);
+  }
+
+  bindLanguageChange() {
     document.querySelector('#change-language').addEventListener('click', () => {
-      this.changeLanguageButton.textContent = this.language;
+      const buttonText = this.changeLanguageButton.textContent;
+      buttonText === 'en'
+        ? (this.changeLanguageButton.textContent = 'pl')
+        : (this.changeLanguageButton.textContent = 'en');
+
       if (this.language === 'pl') {
         this.language = 'en';
         globalStateLanguage = 'en';
@@ -295,9 +312,11 @@ class LoginView extends TranslationView {
         this.language = 'pl';
         globalStateLanguage = 'pl';
       }
-      this.translation = handleLanguageChange(this.language);
       console.log('login view');
-      new LoginController(new LoginModel(), new LoginView());
+      new LoginController(
+        new LoginModel(this.autoLogin, this.language),
+        new LoginView(this.autoLogin, this.language)
+      );
     });
   }
 }
