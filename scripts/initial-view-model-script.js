@@ -36,6 +36,7 @@ class InitialView extends TranslationView {
   }
 
   initView = () => {
+    this.refreshListeners();
     this.app = document.querySelector('#root');
     this.header = document.querySelector('.header');
     this.headerNav = this.createElement('nav', 'header-nav');
@@ -107,7 +108,6 @@ class InitialView extends TranslationView {
         globalStateLanguage = 'pl';
       }
       this.translation = handleLanguageChange(this.language);
-      this.changeLanguageButton.textContent = this.language;
       console.log('initial');
       new InitialController(new InitialModel(), new InitialView());
     });

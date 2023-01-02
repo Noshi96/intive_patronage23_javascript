@@ -7,12 +7,9 @@
  */
 class LoginModel extends TranslationModel {
   constructor(autoLogin = false) {
-    super();
+    super(globalStateLanguage);
     this.autoLogin = autoLogin;
     this.users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-    this.incorrectPasswordOrUsername = 'Incorrect password or user name.';
-    this.incentiveToOpenAccountText =
-      'Create an account for this email by clicking on Sign up.';
   }
 
   #isUserDataValid = false;
@@ -30,10 +27,10 @@ class LoginModel extends TranslationModel {
     );
 
     if (existingUser.length !== 1 && isEmailValid) {
-      return this.incentiveToOpenAccountText;
+      return this.translation.incentiveToOpenAccountText;
     }
     if (existingUser.length !== 1) {
-      return this.incorrectPasswordOrUsername;
+      return this.translation.incorrectPasswordOrUsername;
     }
 
     return 'valid';
@@ -45,7 +42,7 @@ class LoginModel extends TranslationModel {
     );
 
     if (existingUser.length !== 1) {
-      return this.incorrectPasswordOrUsername;
+      return this.translation.incorrectPasswordOrUsername;
     }
 
     const incomingUserHashPassword = this.#hashUserPassword(password);
@@ -55,7 +52,7 @@ class LoginModel extends TranslationModel {
       incomingUserHashPassword.toString();
 
     if (!isPasswordValid) {
-      return this.incorrectPasswordOrUsername;
+      return this.translation.incorrectPasswordOrUsername;
     }
 
     return 'valid';
@@ -135,8 +132,8 @@ class LoginView extends TranslationView {
   }
 
   initView() {
+    this.refreshListeners();
     this.app = document.querySelector('#root');
-    this.headerNav = document.querySelector('.header-nav');
     // If there is switch don't clear
     if (!this.autoLogin) {
       this.app.innerHTML = '';
@@ -148,6 +145,8 @@ class LoginView extends TranslationView {
     this.loginNavButton.style.visibility = 'hidden ';
     this.registerNavButton.classList.remove('hide');
     this.loginNavButton.classList.add('hide');
+
+    this.registerNavButton.textContent = this.translation.registerText;
 
     this.formContainer = this.createElement('div');
     this.formContainer.classList.add('form-container');
@@ -164,7 +163,7 @@ class LoginView extends TranslationView {
             name="user-name"
             required 
             minlength="6"
-            maxlength="16"
+            maxlength="50"
           />
           <span class="error-user-name error" aria-live="polite"></span>
         </div>
@@ -262,16 +261,14 @@ class LoginView extends TranslationView {
     if (userNameIsValidMessage === userPasswordIsValidMessage) {
       this.userPasswordError.textContent =
         userPasswordIsValidMessage !== 'valid'
-          ? this.translation.incorrectPasswordOrUsername
+          ? userPasswordIsValidMessage
           : '';
     } else {
       this.userNameError.textContent =
-        userNameIsValidMessage !== 'valid'
-          ? this.translation.incentiveToOpenAccountText
-          : '';
+        userNameIsValidMessage !== 'valid' ? userNameIsValidMessage : '';
       this.userPasswordError.textContent =
         userPasswordIsValidMessage !== 'valid'
-          ? this.translation.incorrectPasswordOrUsername
+          ? userPasswordIsValidMessage
           : '';
     }
   }
@@ -290,6 +287,7 @@ class LoginView extends TranslationView {
 
   bindLanguageChange(handleLanguageChange) {
     document.querySelector('#change-language').addEventListener('click', () => {
+      this.changeLanguageButton.textContent = this.language;
       if (this.language === 'pl') {
         this.language = 'en';
         globalStateLanguage = 'en';
@@ -298,7 +296,6 @@ class LoginView extends TranslationView {
         globalStateLanguage = 'pl';
       }
       this.translation = handleLanguageChange(this.language);
-      this.changeLanguageButton.textContent = this.language;
       console.log('login view');
       new LoginController(new LoginModel(), new LoginView());
     });

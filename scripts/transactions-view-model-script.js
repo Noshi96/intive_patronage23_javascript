@@ -54,15 +54,16 @@ class TransactionsView extends TranslationView {
   }
 
   initView() {
+    this.refreshListeners();
     this.app = document.querySelector('#root');
     this.app.innerHTML = '<h1>Hello</h1>';
 
     this.headerNav = document.querySelector('.header-nav');
     this.languageDiv = this.createElement('div', 'language-div');
     this.languageDiv.innerHTML = `
-    <button id="change-language">${
-      this.language === 'en' ? 'pl' : 'en'
-    }</button>
+      <button id="change-language">
+        ${this.language === 'en' ? 'pl' : 'en'}
+      </button>
     `;
 
     this.navListLoggedIn = this.createElement('ul', 'nav-list-logged-in');
@@ -109,6 +110,7 @@ class TransactionsView extends TranslationView {
 
   bindLanguageChange(handleLanguageChange) {
     document.querySelector('#change-language').addEventListener('click', () => {
+      this.changeLanguageButton.textContent = this.language;
       if (this.language === 'pl') {
         this.language = 'en';
         globalStateLanguage = 'en';
@@ -117,7 +119,6 @@ class TransactionsView extends TranslationView {
         globalStateLanguage = 'pl';
       }
       this.translation = handleLanguageChange(this.language);
-      this.changeLanguageButton.textContent = this.language;
       console.log('transactions view');
       new TransactionsController(
         new TransactionsModel(),

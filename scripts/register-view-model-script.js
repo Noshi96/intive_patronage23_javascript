@@ -7,7 +7,7 @@
  */
 class RegisterModel extends TranslationModel {
   constructor() {
-    super();
+    super(globalStateLanguage);
     this.users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
   }
 
@@ -54,16 +54,16 @@ class RegisterModel extends TranslationModel {
     const isDuplicated = this.users.some(({ userName }) => userName === name);
 
     if (!isUserNameValid) {
-      return isUserNameValidText;
+      return this.translation.isUserNameValidText;
     }
     if (isDuplicated) {
-      return isUserNameDuplicatedText;
+      return this.translation.isUserNameDuplicatedText;
     }
     if (countLetters < 5) {
-      return isEnoughLettersText;
+      return this.translation.isEnoughLettersText;
     }
     if (countDigits < 1) {
-      return isEnoughDigitsText;
+      return this.translation.isEnoughDigitsText;
     }
     return 'valid';
   }
@@ -74,7 +74,7 @@ class RegisterModel extends TranslationModel {
     let isDuplicatedEmailWithAlias = false;
 
     if (!isEmailValid) {
-      return isEmailValidText;
+      return this.translation.isEmailValidText;
     }
 
     const isPlusInEmail = (checkEmail) => {
@@ -108,7 +108,7 @@ class RegisterModel extends TranslationModel {
     }
 
     if (isDuplicatedEmailWithAlias) {
-      return isDuplicatedEmailWithAliasText;
+      return this.translation.DuplicatedEmailWithAliasText;
     }
 
     const isDuplicated = this.users.some(
@@ -116,13 +116,15 @@ class RegisterModel extends TranslationModel {
     );
 
     if (isDuplicated) {
-      return isDuplicatedEmailText;
+      return this.translation.isDuplicatedEmailText;
     }
     return 'valid';
   }
 
   #validateUserConfirmEmail(email, confirmEmail) {
-    return email !== confirmEmail ? isEmailAndConfirmEmailValidText : 'valid';
+    return email !== confirmEmail
+      ? this.translation.isEmailAndConfirmEmailValidText
+      : 'valid';
   }
 
   #hashUserPassword(password) {
@@ -169,11 +171,12 @@ class RegisterModel extends TranslationModel {
  */
 class RegisterView extends TranslationView {
   constructor() {
-    super('pl');
+    super(globalStateLanguage);
     this.initView();
   }
 
   initView() {
+    this.refreshListeners();
     this.app = document.querySelector('#root');
     this.app.innerHTML = '';
 
@@ -183,6 +186,8 @@ class RegisterView extends TranslationView {
     this.loginNavButton.style.visibility = 'visible ';
     this.registerNavButton.classList.add('hide');
     this.loginNavButton.classList.remove('hide');
+
+    this.loginNavButton.textContent = this.translation.loginText;
 
     this.formContainer = this.createElement('div');
     this.formContainer.classList.add('form-container');
@@ -252,6 +257,8 @@ class RegisterView extends TranslationView {
       '.error-user-confirm-email'
     );
     this.app.append(this.formContainer);
+
+    this.changeLanguageButton = document.querySelector('#change-language');
   }
 
   get #userName() {
@@ -316,6 +323,7 @@ class RegisterView extends TranslationView {
 
   bindLanguageChange(handleLanguageChange) {
     document.querySelector('#change-language').addEventListener('click', () => {
+      this.changeLanguageButton.textContent = this.language;
       if (this.language === 'pl') {
         this.language = 'en';
         globalStateLanguage = 'en';
@@ -324,8 +332,7 @@ class RegisterView extends TranslationView {
         globalStateLanguage = 'pl';
       }
       this.translation = handleLanguageChange(this.language);
-      this.changeLanguageButton.textContent = this.language;
-      console.log('transactions view');
+      console.log('register view');
       new RegisterController(new RegisterModel(), new RegisterView());
     });
   }

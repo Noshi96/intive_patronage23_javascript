@@ -19,12 +19,12 @@ class LoginController extends TranslationController {
     this.view = view;
     this.registeredUser = registeredUser;
 
+    this.view.bindLanguageChange(this.handleLanguageChange);
     this.view.bindValidateUserData(this.handleValidateUserData);
     this.view.bindLoginUser(
       this.handleLoginUser,
       this.handleSwitchViewToTransactions
     );
-    this.view.bindLanguageChange(this.handleLanguageChange);
   }
 
   handleValidateUserData = (user) => {
@@ -58,9 +58,9 @@ class RegisterController extends TranslationController {
     this.model = model;
     this.view = view;
 
+    this.view.bindLanguageChange(this.handleLanguageChange);
     this.view.bindValidateUserData(this.handleValidateUserData);
     this.view.bindAddUser(this.handleAddUser);
-    this.view.bindLanguageChange(this.handleLanguageChange);
   }
 
   handleAddUser = (userProp) => {
@@ -85,6 +85,7 @@ class TransactionsController extends TranslationController {
     super(model, view);
     this.model = model;
     this.view = view;
+
     this.view.bindLanguageChange(this.handleLanguageChange);
     this.view.bindLogoutUser(this.handleLogoutUser);
     // this.view.bindShowData(this.handlerGetTransactionsData);
@@ -111,9 +112,10 @@ class InitialController extends TranslationController {
     super(model, view);
     this.model = model;
     this.view = view;
+
+    this.view.bindLanguageChange(this.handleLanguageChange);
     this.view.bindInitRegister(this.handlerInitRegister);
     this.view.bindInitLogin(this.handlerInitLogin);
-    this.view.bindLanguageChange(this.handleLanguageChange);
     this.currentLoggedInUser =
       JSON.parse(localStorage.getItem('currentLoggedInUser')) || null;
   }
@@ -134,11 +136,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Automatic login if u are logged in
   if (initialController.currentLoggedInUser) {
-    // const { currentLoggedInUser } = initialController;
-    // new LoginController(
-    //   new LoginModel(true),
-    //   new LoginView(true, currentLoggedInUser),
-    //   currentLoggedInUser
-    // );
+    const { currentLoggedInUser } = initialController;
+    new LoginController(
+      new LoginModel(true),
+      new LoginView(true, currentLoggedInUser),
+      currentLoggedInUser
+    );
   }
 });
