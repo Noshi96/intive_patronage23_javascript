@@ -10,8 +10,9 @@ class TransactionsModel extends TranslationModel {
   #transactionsAccessToken = '$2b$10$5pBRUbFRKdKft/b8qSQ3IeyPQgQ8CLXlvgoQA6GdpYvdWva.pOfGS';
   #HTTPRequestMethod = 'GET';
 
-  constructor(language) {
+  constructor(language, userName) {
     super(language);
+    this.userName = userName;
   }
 
   async getTransactionsData() {
@@ -40,6 +41,17 @@ class TransactionsModel extends TranslationModel {
   logoutUser() {
     this.#logout();
   }
+
+  getLoggedInUserName() {
+    return this.userName;
+  }
+
+  languageChange(language) {
+    new TransactionsController(
+      new TransactionsModel(language, this.userName),
+      new TransactionsView(language)
+    );
+  }
 }
 
 /**
@@ -48,50 +60,22 @@ class TransactionsModel extends TranslationModel {
  * Visual representation of the model.
  */
 class TransactionsView extends TranslationView {
-  constructor(userName, language) {
+  constructor(language) {
     super(language);
-    this.userName = userName;
     this.initView();
   }
 
   initView() {
     this.refreshListeners();
+    this.changeLanguageButton = document.querySelector(
+      '#change-language-button'
+    );
     this.app = document.querySelector('#root');
     this.app.innerHTML = '<h1>Hello</h1>';
-
-    this.headerNav = document.querySelector('.header-nav');
-    this.languageDiv = this.createElement('div', 'language-div');
-    this.languageDiv.innerHTML = `
-      <button id="change-language">
-        ${this.language === 'en' ? 'pl' : 'en'}
-      </button>
-    `;
-
-    this.navListLoggedIn = this.createElement('ul', 'nav-list-logged-in');
-
-    this.loggedName = document.createElement('li');
-    this.loggedName.setAttribute('id', 'logged-name');
-
-    this.changeLanguageButton = document.querySelector('#change-language');
-
-    this.logoutButton = document.createElement('li');
-    this.logoutButton.setAttribute('id', 'log-out');
-    this.logoutButton.classList.add('button-style');
-
-    this.logoutButton.textContent = this.translation.logoutText;
-
-    this.loggedName.textContent = this.userName;
-    this.navListLoggedIn.append(this.loggedName);
-    this.navListLoggedIn.append(this.logoutButton);
-    this.headerNav.innerHTML = '';
-    this.headerNav.append(this.navListLoggedIn);
-    this.headerNav.append(this.languageDiv);
-
-    console.log('init transactions');
   }
 
-  async bindShowData(handlerGetTransactionsData) {
-    const transactionsData = await handlerGetTransactionsData();
+  async bindShowData(handleGetTransactionsData) {
+    const transactionsData = await handleGetTransactionsData();
     console.log(transactionsData);
   }
 
@@ -110,18 +94,49 @@ class TransactionsView extends TranslationView {
     });
   }
 
-  bindLanguageChange() {
-    document.querySelector('#change-language').addEventListener('click', () => {
-      if (this.language === 'pl') {
-        this.language = 'en';
-      } else {
-        this.language = 'pl';
-      }
-      console.log('transactions view');
-      new TransactionsController(
-        new TransactionsModel(),
-        new TransactionsView(this.userName, this.language)
-      );
-    });
+  bindLoadHeaderAndUserName(handleGetLoggedInUserName) {
+    const userName = handleGetLoggedInUserName();
+    this.headerNav = document.querySelector('.header-nav');
+    this.languageButtonContainer = this.createElement(
+      'div',
+      'language-button-container'
+    );
+    this.languageButtonContainer.innerHTML = `
+      <button id="change-language-button">
+        ${this.language === 'en' ? 'pl' : 'en'}
+      </button>
+    `;
+
+    this.navListLoggedIn = this.createElement('ul', 'nav-list-logged-in');
+
+    this.loggedName = document.createElement('li');
+    this.loggedName.setAttribute('id', 'logged-name');
+
+    this.logoutButton = document.createElement('li');
+    this.logoutButton.setAttribute('id', 'log-out');
+    this.logoutButton.classList.add('button-style');
+
+    this.logoutButton.textContent = this.translation.logoutText;
+
+    this.loggedName.textContent = userName;
+    this.navListLoggedIn.append(this.loggedName);
+    this.navListLoggedIn.append(this.logoutButton);
+    this.headerNav.innerHTML = '';
+    this.headerNav.append(this.navListLoggedIn);
+    this.headerNav.append(this.languageButtonContainer);
+
+    console.log('init transactions');
   }
+
+  // bindLanguageChange() {
+  //   document
+  //     .querySelector('#change-language-button')
+  //     .addEventListener('click', () => {
+  //       this.language = this.language === 'pl' ? 'en' : 'pl';
+  //       new TransactionsController(
+  //         new TransactionsModel(this.language),
+  //         new TransactionsView(this.userName, this.language)
+  //       );
+  //     });
+  // }
 }

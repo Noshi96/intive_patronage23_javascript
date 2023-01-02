@@ -91,6 +91,15 @@ const translationsJson = {
   pl,
 };
 
+class TranslationController {
+  constructor(model, view) {
+    this.model = model;
+    this.view = view;
+  }
+  handleLanguageChange = (language) => {
+    this.model.languageChange(language);
+  };
+}
 class TranslationModel {
   constructor(language = 'pl') {
     this.language = language;
@@ -103,8 +112,24 @@ class TranslationView {
     this.language = language;
     this.translation = translationsJson[this.language] || {};
   }
+
+  bindLanguageChange(handleLanguageChange) {
+    console.log('main', this.language);
+    document
+      .querySelector('#change-language-button')
+      .addEventListener('click', () => {
+        this.language = this.language === 'pl' ? 'en' : 'pl';
+        this.changeLanguageButton.textContent =
+          this.changeLanguageButton.textContent === 'en' ? 'pl' : 'en';
+        handleLanguageChange(this.language);
+      });
+  }
+
   refreshListeners() {
-    const changeLanguageButton = document.getElementById('change-language');
+    console.log('refresh');
+    const changeLanguageButton = document.getElementById(
+      'change-language-button'
+    );
     if (changeLanguageButton) {
       changeLanguageButton.replaceWith(changeLanguageButton.cloneNode(true));
     }

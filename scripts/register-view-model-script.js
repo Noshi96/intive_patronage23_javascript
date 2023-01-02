@@ -169,6 +169,14 @@ class RegisterModel extends TranslationModel {
       new LoginView(autoLogin, language)
     );
   }
+
+  languageChange(language) {
+    console.log('languageChange RegisterController');
+    new RegisterController(
+      new RegisterModel(language),
+      new RegisterView(language)
+    );
+  }
 }
 
 /**
@@ -265,7 +273,9 @@ class RegisterView extends TranslationView {
     );
     this.app.append(this.formContainer);
 
-    this.changeLanguageButton = document.querySelector('#change-language');
+    this.changeLanguageButton = document.querySelector(
+      '#change-language-button'
+    );
   }
 
   get #userName() {
@@ -336,23 +346,19 @@ class RegisterView extends TranslationView {
       });
   }
 
-  bindLanguageChange() {
-    document.querySelector('#change-language').addEventListener('click', () => {
-      const buttonText = this.changeLanguageButton.textContent;
-      buttonText === 'en'
-        ? (this.changeLanguageButton.textContent = 'pl')
-        : (this.changeLanguageButton.textContent = 'en');
+  // bindLanguageChange() {
+  //   document
+  //     .querySelector('#change-language-button')
+  //     .addEventListener('click', () => {
+  //       this.changeLanguageButton.textContent =
+  //         this.changeLanguageButton.textContent === 'en' ? 'pl' : 'en';
 
-      if (this.language === 'pl') {
-        this.language = 'en';
-      } else {
-        this.language = 'pl';
-      }
-      console.log('register view');
-      new RegisterController(
-        new RegisterModel(this.language),
-        new RegisterView(this.language)
-      );
-    });
-  }
+  //       this.language = this.language === 'pl' ? 'en' : 'pl';
+  //       console.log('register view');
+  //       new RegisterController(
+  //         new RegisterModel(this.language),
+  //         new RegisterView(this.language)
+  //       );
+  //     });
+  // }
 }

@@ -113,8 +113,8 @@ class LoginModel extends TranslationModel {
 
   switchViewToTransactions(name) {
     new TransactionsController(
-      new TransactionsModel(this.language),
-      new TransactionsView(name, this.language)
+      new TransactionsModel(this.language, name),
+      new TransactionsView(this.language)
     );
   }
 
@@ -122,6 +122,14 @@ class LoginModel extends TranslationModel {
     new RegisterController(
       new RegisterModel(this.language),
       new RegisterView(this.language)
+    );
+  }
+
+  languageChange(language) {
+    console.log('languageChange LoginController');
+    new LoginController(
+      new LoginModel(this.autoLogin, language),
+      new LoginView(this.autoLogin, language)
     );
   }
 }
@@ -203,7 +211,9 @@ class LoginView extends TranslationView {
       this.app.append(this.formContainer);
     }
 
-    this.changeLanguageButton = document.querySelector('#change-language');
+    this.changeLanguageButton = document.querySelector(
+      '#change-language-button'
+    );
   }
 
   get #userName() {
@@ -298,25 +308,19 @@ class LoginView extends TranslationView {
       registerNavButton.addEventListener('click', handleSwitchViewToRegister);
   }
 
-  bindLanguageChange() {
-    document.querySelector('#change-language').addEventListener('click', () => {
-      const buttonText = this.changeLanguageButton.textContent;
-      buttonText === 'en'
-        ? (this.changeLanguageButton.textContent = 'pl')
-        : (this.changeLanguageButton.textContent = 'en');
+  // bindLanguageChange() {
+  //   document
+  //     .querySelector('#change-language-button')
+  //     .addEventListener('click', () => {
+  //       this.changeLanguageButton.textContent =
+  //         this.changeLanguageButton.textContent === 'en' ? 'pl' : 'en';
 
-      if (this.language === 'pl') {
-        this.language = 'en';
-        globalStateLanguage = 'en';
-      } else {
-        this.language = 'pl';
-        globalStateLanguage = 'pl';
-      }
-      console.log('login view');
-      new LoginController(
-        new LoginModel(this.autoLogin, this.language),
-        new LoginView(this.autoLogin, this.language)
-      );
-    });
-  }
+  //       this.language = this.language === 'pl' ? 'en' : 'pl';
+  //       console.log('login view');
+  //       new LoginController(
+  //         new LoginModel(this.autoLogin, this.language),
+  //         new LoginView(this.autoLogin, this.language)
+  //       );
+  //     });
+  // }
 }

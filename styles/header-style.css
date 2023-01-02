@@ -63,6 +63,16 @@
   font-weight: 700;
 }
 
+.language-button-container {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+#change-language-button {
+  cursor: pointer;
+}
+
 @media only screen and (min-width: 769px){
   .header {
     height: 5rem;
@@ -70,6 +80,7 @@
   .header-nav {
     flex-direction: row;
     justify-content: space-around;
+    margin-right: 2rem;
   }
   .nav-list-non-logged {
     justify-content: flex-start;

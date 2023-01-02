@@ -11,15 +11,23 @@ class InitialModel extends TranslationModel {
   }
 
   initRegister() {
-    globalRegisterController = new RegisterController(
+    new RegisterController(
       new RegisterModel(this.language),
       new RegisterView(this.language)
     );
   }
+
   initLogin() {
-    globalLoginController = new LoginController(
+    new LoginController(
       new LoginModel(false, this.language),
       new LoginView(false, this.language)
+    );
+  }
+
+  languageChange(language) {
+    new InitialController(
+      new InitialModel(language),
+      new InitialView(language)
     );
   }
 }
@@ -62,16 +70,19 @@ class InitialView extends TranslationView {
     this.header.append(this.headerNav);
     this.app.append(this.initialContainer);
 
-    this.languageDiv = this.createElement('div', 'language-div');
-    this.languageDiv.innerHTML = `
-        <button id="change-language">${
+    this.languageButtonContainer = this.createElement(
+      'div',
+      'language-button-container'
+    );
+    this.languageButtonContainer.innerHTML = `
+        <button id="change-language-button">${
           this.language === 'en' ? 'pl' : 'en'
         }</button>
     `;
 
-    this.headerNav.append(this.languageDiv);
-    this.changeLanguageButton = this.languageDiv.querySelector(
-      '#change-language'
+    this.headerNav.append(this.languageButtonContainer);
+    this.changeLanguageButton = this.languageButtonContainer.querySelector(
+      '#change-language-button'
     );
   };
 
@@ -98,20 +109,14 @@ class InitialView extends TranslationView {
       });
   }
 
-  bindLanguageChange() {
-    this.changeLanguageButton.addEventListener('click', () => {
-      if (this.language === 'pl') {
-        this.language = 'en';
-        globalStateLanguage = 'en';
-      } else {
-        this.language = 'pl';
-        globalStateLanguage = 'pl';
-      }
-      console.log('initial');
-      new InitialController(
-        new InitialModel(this.language),
-        new InitialView(this.language)
-      );
-    });
-  }
+  // bindLanguageChange() {
+  //   this.changeLanguageButton.addEventListener('click', () => {
+  //     this.language = this.language === 'pl' ? 'en' : 'pl';
+  //     console.log('initial');
+  //     new InitialController(
+  //       new InitialModel(this.language),
+  //       new InitialView(this.language)
+  //     );
+  //   });
+  // }
 }
