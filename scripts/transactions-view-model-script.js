@@ -30,20 +30,19 @@ class TransactionsModel extends TranslationModel {
     localStorage.setItem('currentLoggedInUser', JSON.stringify(user));
   }
 
-  #logout() {
-    this.#commitCurrentLoggedInUser(null);
-    new InitialController(
-      new InitialModel(this.language),
-      new InitialView(this.language)
-    );
-  }
-
   logoutUser() {
-    this.#logout();
+    this.#commitCurrentLoggedInUser(null);
   }
 
   getLoggedInUserName() {
     return this.userName;
+  }
+
+  switchViewToInitial() {
+    new InitialController(
+      new InitialModel(this.language),
+      new InitialView(this.language)
+    );
   }
 
   languageChange(language) {
@@ -86,11 +85,12 @@ class TransactionsView extends TranslationView {
     return element;
   }
 
-  bindLogoutUser(handleLogoutUser) {
+  bindLogoutUser(handleLogoutUser, handleSwitchViewToInitial) {
     this.logoutButton.addEventListener('click', (event) => {
       event.preventDefault();
       this.navListLoggedIn.innerHTML = '';
       handleLogoutUser();
+      handleSwitchViewToInitial();
     });
   }
 

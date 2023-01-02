@@ -91,7 +91,10 @@ class TransactionsController extends TranslationController {
 
     this.view.bindLoadHeaderAndUserName(this.handleGetLoggedInUserName);
     this.view.bindLanguageChange(this.handleLanguageChange);
-    this.view.bindLogoutUser(this.handleLogoutUser);
+    this.view.bindLogoutUser(
+      this.handleLogoutUser,
+      this.handleSwitchViewToInitial
+    );
     // this.view.bindShowData(this.handleGetTransactionsData);
   }
 
@@ -104,6 +107,10 @@ class TransactionsController extends TranslationController {
 
   handleGetLoggedInUserName = () => {
     return this.model.getLoggedInUserName();
+  };
+
+  handleSwitchViewToInitial = () => {
+    this.model.switchViewToInitial();
   };
 }
 
