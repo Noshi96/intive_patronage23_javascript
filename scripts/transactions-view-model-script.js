@@ -365,6 +365,7 @@ class TransactionsModel extends TranslationModel {
  * Visual representation of the model.
  */
 class TransactionsView extends TranslationView {
+  #isOpen = false;
   constructor(language) {
     super(language);
     this.initView();
@@ -619,15 +620,6 @@ class TransactionsView extends TranslationView {
         const tr = document.createElement('tr');
         tr.classList.add(`hidden-id-${index}`, 'show-color-row');
 
-        // Hidden Row
-        const hiddenTr = document.createElement('tr');
-        hiddenTr.classList.add('hidden-row');
-        const extendedInformation = document.createElement('td');
-        extendedInformation.setAttribute('colspan', '3');
-        extendedInformation.textContent = `${this.translation.date}: ${date}, ${this.translation.balance}: ${balance}zł`;
-        hiddenTr.append(extendedInformation);
-        this.tbody.append(hiddenTr);
-
         const transactionTypeIconSpan = document.createElement('span');
         transactionTypeIconSpan.classList.add('material-symbols-outlined');
 
@@ -668,6 +660,25 @@ class TransactionsView extends TranslationView {
         tr.append(transactionAmount);
 
         this.tbody.append(tr);
+
+        // Hidden Row
+        const hiddenTr = document.createElement('tr');
+        hiddenTr.classList.add('hidden-row');
+        const extendedInformation = document.createElement('td');
+        extendedInformation.setAttribute('colspan', '3');
+        extendedInformation.textContent = `${this.translation.date}: ${date}, ${this.translation.balance}: ${balance}zł`;
+        hiddenTr.append(extendedInformation);
+        this.tbody.append(hiddenTr);
+
+        tr.addEventListener('click', () => {
+          if (hiddenTr.classList.contains('hidden-row') && !this.isOpen) {
+            hiddenTr.classList.remove('hidden-row');
+            this.isOpen = true;
+          } else if (!hiddenTr.classList.contains('hidden-row')) {
+            hiddenTr.classList.add('hidden-row');
+            this.isOpen = false;
+          }
+        });
       }
     );
   }
@@ -726,118 +737,6 @@ class TransactionsView extends TranslationView {
       this.tbody.append(tr);
     });
   }
-
-  // #createTransactions(allTransactions, transactionsTypes) {
-  //   this.styledTable = document.createElement('table');
-  //   this.styledTable.classList.add('styled-table');
-  //   this.styledTable.setAttribute('id', 'transactions-table');
-  //   this.styledTable.innerHTML = `
-  //       <thead>
-  //         <tr>
-  //           <th>${this.translation.date}</th>
-  //           <th>${this.translation.type}<button id="sort-type-button">sort</button></th>
-  //           <th>${this.translation.description}</th>
-  //           <th>${this.translation.amount}</th>
-  //           <th>${this.translation.balance}</th>
-  //         </tr>
-  //       </thead>
-  //     `;
-
-  //   this.tbody = document.createElement('tbody');
-
-  //   this.styledTable
-  //     .querySelector('#sort-type-button')
-  //     .addEventListener('click', () => {
-  //       this.#sortTransactionsByType(allTransactions);
-  //     });
-
-  //   allTransactions.forEach(({ date, type, balance, description, amount }) => {
-  //     const tr = document.createElement('tr');
-  //     const transactionDate = document.createElement('td');
-  //     transactionDate.textContent = `${date}`;
-
-  //     const transactionTypeIconSpan = document.createElement('span');
-  //     transactionTypeIconSpan.classList.add('material-symbols-outlined');
-
-  //     const transactionType = document.createElement('td');
-
-  //     const transactionDescription = document.createElement('td');
-  //     transactionDescription.innerHTML = `
-  //       <p>${description}</p>
-  //       <p class="small-text">(${transactionsTypes[type]})</p>
-  //     `;
-
-  //     const transactionAmount = document.createElement('td');
-  //     transactionAmount.textContent = `${amount}zł`;
-  //     if (+amount > 0) {
-  //       transactionAmount.classList.add('green-font', 'font-size-bold');
-  //     } else {
-  //       transactionAmount.classList.add('red-font', 'font-size-bold');
-  //     }
-
-  //     const transactionBalance = document.createElement('td');
-  //     transactionBalance.textContent = `${balance}zł`;
-
-  //     if (+type === 1) {
-  //       transactionTypeIconSpan.textContent = 'account_balance_wallet';
-  //       transactionTypeIconSpan.classList.add('green-font');
-  //     } else if (+type === 2) {
-  //       transactionTypeIconSpan.textContent = 'shopping_cart';
-  //       transactionTypeIconSpan.classList.add('red-font');
-  //     } else if (+type === 3) {
-  //       transactionTypeIconSpan.textContent = 'payments';
-  //       transactionTypeIconSpan.classList.add('green-font');
-  //     } else if (+type === 4) {
-  //       transactionTypeIconSpan.textContent = 'shopping_bag';
-  //       transactionTypeIconSpan.classList.add('red-font');
-  //     }
-
-  //     transactionType.append(transactionTypeIconSpan);
-
-  //     tr.append(transactionDate);
-  //     tr.append(transactionType);
-  //     tr.append(transactionDescription);
-  //     tr.append(transactionAmount);
-  //     tr.append(transactionBalance);
-
-  //     this.tbody.append(tr);
-  //   });
-
-  //   this.styledTable.append(this.tbody);
-
-  //   const filterInput = document.createElement('input');
-  //   filterInput.setAttribute('type', 'text');
-  //   filterInput.setAttribute('id', 'myInput');
-  //   filterInput.setAttribute('placeholder', 'Search for transactions...');
-  //   filterInput.setAttribute('title', 'Type in a description');
-  //   this.transactionsSection.append(filterInput);
-
-  //   filterInput.addEventListener('keyup', () => {
-  //     this.#newFilter(allTransactions, transactionsTypes);
-  //   });
-
-  //   this.transactionsSection.append(this.styledTable);
-  // }
-
-  // #filterTransactions() {
-  //   let input, filter, table, tr, td, i, txtValue, p;
-  //   input = document.getElementById('myInput');
-  //   filter = input.value.toLowerCase();
-  //   table = document.getElementById('transactions-table');
-  //   tr = table.getElementsByTagName('tr');
-  //   for (i = 1; i < tr.length; i++) {
-  //     td = tr[i].getElementsByTagName('td')[2];
-  //     p = td.getElementsByTagName('p')[0];
-  //     if (p) {
-  //       txtValue = p.textContent || p.innerText;
-  //       if (txtValue.toLowerCase().indexOf(filter) > -1) {
-  //         tr[i].style.display = '';
-  //       } else {
-  //         tr[i].style.display = 'none';
-  //       }
-  //     }
-  //   }
-  // }
 
   #filterTransactionsByDescription(allTransactionData) {
     const input = document.getElementById('myInput');

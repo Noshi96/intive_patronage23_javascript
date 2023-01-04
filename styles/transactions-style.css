@@ -72,6 +72,7 @@
   font-family: sans-serif;
   min-width: 100%;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  transition: all 0.4s;
 }
 
 .styled-table th,
@@ -85,6 +86,10 @@
 
 .hidden-row{
   display: none;
+}
+
+.show-row{
+  display: '';
 }
 
 .styled-table thead tr {
@@ -101,6 +106,10 @@ th button {
   font-family: sans-serif;
   background: #009879;
   border: none;
+  cursor: pointer;
+}
+
+.styled-table tbody tr {
   cursor: pointer;
 }
 
@@ -150,5 +159,8 @@ th button[data-dir="desc"]::after {
   }
   .styled-table tbody tr:nth-of-type(even) {
     background-color: #f3f3f3;
+  }
+  .styled-table tbody tr {
+    cursor: initial;
   }
 }
