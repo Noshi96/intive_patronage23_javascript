@@ -95,12 +95,17 @@ class TransactionsController extends TranslationController {
       this.handleLogoutUser,
       this.handleSwitchViewToInitial
     );
-    // this.view.bindShowData(this.handleGetTransactionsData);
+    this.view.bindShowTransactionsData(this.handleGetTransactionsData);
   }
 
   // handleGetTransactionsData = () => {
-  //   return this.model.getTransactionsData();
+  //   return this.model.getSomeData();
   // };
+
+  handleGetTransactionsData = () => {
+    return this.model.getTransactionsData();
+  };
+
   handleLogoutUser = () => {
     this.model.logoutUser();
   };

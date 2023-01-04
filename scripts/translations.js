@@ -38,6 +38,25 @@ const en = {
   isDuplicatedEmailWithAliasText: 'Duplicated email with alias.',
   isDuplicatedEmailText: 'Duplicated email.',
   isEmailAndConfirmEmailValidText: 'Confirm email is different then email',
+
+  date: 'Date',
+  type: 'Type',
+  amount: 'Amount',
+  balance: 'Balance',
+  description: 'Description',
+
+  transactionTypes: {
+    '1': 'Receipts - other',
+    '2': 'Expenses - purchases',
+    '3': 'Receipts - salary',
+    '4': 'Expenses - other',
+  },
+
+  balanceLabelTitle: 'Balance',
+  barChartTitle: 'Account balance at the end of each day',
+  doughnutChartTitle: 'Percentage breakdown of transactions',
+  searchForTransactions: 'Search for transactions...',
+  locale: 'en-GB',
 };
 
 const pl = {
@@ -84,6 +103,25 @@ const pl = {
   isDuplicatedEmailText: 'Taki email już istnieje',
   isEmailAndConfirmEmailValidText:
     'Email w polach Email i Potwierdź email muszą się zgadzać.',
+
+  date: 'Data',
+  type: 'Typ',
+  amount: 'Kwota',
+  balance: 'Saldo',
+  description: 'Opis',
+
+  transactionTypes: {
+    '1': 'Wpływy - inne',
+    '2': 'Wydatki - zakupy',
+    '3': 'Wpływy - wynagrodzenie',
+    '4': 'Wydatki - inne',
+  },
+
+  balanceLabelTitle: 'Saldo',
+  barChartTitle: 'Saldo konta na koniec każdego dnia',
+  doughnutChartTitle: 'Podział procentowy transakcji',
+  searchForTransactions: 'Szukaj transakcji...',
+  locale: 'pl-PL',
 };
 
 const translationsJson = {
