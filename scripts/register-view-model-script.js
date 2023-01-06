@@ -38,10 +38,12 @@ class RegisterModel extends TranslationModel {
 
       // automatic login as soon as registration is correct
       const accessForAutoLogin = true;
+      const isFirstLogin = true;
       const loginController = new LoginController(
         new LoginModel(accessForAutoLogin, this.language),
         new LoginView(accessForAutoLogin, this.language),
-        sameUserWithoutHash
+        sameUserWithoutHash,
+        isFirstLogin
       );
     }
   }

@@ -10,20 +10,29 @@
  * @param registeredUser Optional parameter if you want to log in right after registration
  */
 class LoginController extends TranslationController {
-  constructor(model, view, registeredUser) {
+  constructor(model, view, registeredUser, isFirstLogin = false) {
     super(model, view);
     this.model = model;
     this.view = view;
     this.registeredUser = registeredUser;
+    this.isFirstLogin = isFirstLogin;
 
     this.view.bindLanguageChange(this.handleLanguageChange);
-    this.view.bindValidateUserData(this.handleValidateUserData);
+    this.view.bindValidateUserData(
+      this.handleValidateUserData,
+      this.handleGetUserId
+    );
     this.view.bindLoginUser(
       this.handleLoginUser,
-      this.handleSwitchViewToTransactions
+      this.handleSwitchViewToTransactions,
+      this.handleGetUserId
     );
     this.view.bindSwitchViewToRegister(this.handleSwitchViewToRegister);
   }
+
+  handleGetUserId = (name) => {
+    return this.model.getUserId(name);
+  };
 
   handleValidateUserData = (user) => {
     return this.model.validateUserData(this.registeredUser || user);
@@ -33,8 +42,8 @@ class LoginController extends TranslationController {
     return this.model.loginUser(this.registeredUser || user);
   };
 
-  handleSwitchViewToTransactions = (userName) => {
-    this.model.switchViewToTransactions(userName);
+  handleSwitchViewToTransactions = (user) => {
+    this.model.switchViewToTransactions(user, this.isFirstLogin);
   };
 
   handleSwitchViewToRegister = () => {
@@ -98,10 +107,6 @@ class TransactionsController extends TranslationController {
     this.view.bindShowTransactionsData(this.handleGetTransactionsData);
   }
 
-  // handleGetTransactionsData = () => {
-  //   return this.model.getSomeData();
-  // };
-
   handleGetTransactionsData = () => {
     return this.model.getTransactionsData();
   };
@@ -158,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const { currentLoggedInUser } = initialController;
   if (currentLoggedInUser) {
     const { currentLoggedInUser } = initialController;
+    //debugger;
     new LoginController(
       new LoginModel(true),
       new LoginView(true, this.language),

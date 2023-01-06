@@ -57,6 +57,8 @@ const en = {
   doughnutChartTitle: 'Percentage breakdown of transactions',
   searchForTransactions: 'Search for transactions...',
   locale: 'en-GB',
+  location: 'Warsaw',
+  localization: 'Localization',
 };
 
 const pl = {
@@ -122,6 +124,8 @@ const pl = {
   doughnutChartTitle: 'Podział procentowy transakcji',
   searchForTransactions: 'Szukaj transakcji...',
   locale: 'pl-PL',
+  location: 'Warszawa',
+  localization: 'Lokalizacja',
 };
 
 const translationsJson = {

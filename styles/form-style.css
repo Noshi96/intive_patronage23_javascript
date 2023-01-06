@@ -2,10 +2,9 @@
   width: 24rem;
   height: auto;
   border-radius: 5px;
-  background: #828282;
-
-  box-shadow: 0 1px 32px #2596be54;
-  border: 1px solid #ffffff;
+  background: #009879aa;
+  box-shadow: 0 1px 32px #009879aa;
+  border: 1px solid #ffffff44;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -72,6 +71,7 @@
 @media only screen and (min-width: 769px) {
   .form-container {
     width: 35.5rem;
+    margin-top: 0;
   }
   .single-input {
     grid-template-columns: 1fr 1fr;
@@ -79,5 +79,11 @@
   }
   .form-title {
     padding-bottom: 2.2rem;
+  }
+}
+
+@media only screen and (max-width: 375px) {
+  .form-container {
+    margin-top: 10rem;
   }
 }

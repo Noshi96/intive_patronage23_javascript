@@ -25,6 +25,7 @@ class LoginModel extends TranslationModel {
     const existingUser = this.users.filter(
       ({ userName, userEmail }) => userName === name || userEmail === name
     );
+    this.id = existingUser.id;
 
     if (existingUser.length !== 1 && isEmailValid) {
       return this.translation.incentiveToOpenAccountText;
@@ -69,7 +70,7 @@ class LoginModel extends TranslationModel {
   }
 
   validateUserData(user) {
-    const { userName, userPassword } = user;
+    const { userName, userPassword, id } = user;
 
     if (!userName && !userPassword) {
       this.#isUserDataValid = false;
@@ -84,11 +85,14 @@ class LoginModel extends TranslationModel {
     this.#isUserDataValid =
       userNameIsValidMessage === 'valid' &&
       userPasswordIsValidMessage === 'valid';
-
+    console.log('validateUserData - loginModel');
+    console.log(user);
+    //debugger;
     if (this.#isUserDataValid) {
       const loggedInUser = {
         userName,
         userPassword,
+        id,
       };
       this.#commitCurrentLoggedInUser(loggedInUser);
     }
@@ -99,21 +103,33 @@ class LoginModel extends TranslationModel {
     };
   }
 
-  #login(userName) {
-    return userName;
-  }
-
   loginUser(user) {
-    const { userName } = user;
     if (this.#isUserDataValid) {
       this.#isUserDataValid = false;
-      return this.#login(userName);
+      return user;
     }
   }
 
-  switchViewToTransactions(name) {
+  getUserId(name) {
+    return name
+      ? this.users
+          .filter(
+            ({ userName, userEmail }) => name === userName || name === userEmail
+          )
+          .at(0).id
+      : '';
+  }
+
+  switchViewToTransactions(user, isFirstLogin = false) {
+    console.log('switchViewToTransactions', user);
     new TransactionsController(
-      new TransactionsModel(this.language, name),
+      new TransactionsModel(
+        this.language,
+        user.userName,
+        false,
+        user,
+        isFirstLogin
+      ),
       new TransactionsView(this.language)
     );
   }
@@ -235,19 +251,26 @@ class LoginView extends TranslationView {
     user,
     handleSwitchViewToTransactions
   ) {
-    const name = handleLoginUser(user);
-    if (name) {
-      handleSwitchViewToTransactions(name);
+    const userToLogin = handleLoginUser(user);
+    console.log('displayUserAfterAndSwitchToTransactions', user);
+    if (userToLogin?.userName) {
+      handleSwitchViewToTransactions(userToLogin);
     }
   }
 
-  bindLoginUser(handleLoginUser, handleSwitchViewToTransactions) {
+  bindLoginUser(
+    handleLoginUser,
+    handleSwitchViewToTransactions,
+    handleGetUserId
+  ) {
     if (!this.autoLogin) {
       this.form.addEventListener('submit', (event) => {
         event.preventDefault();
+        const id = handleGetUserId(this.#userName);
         const user = {
           userName: this.#userName,
           userPassword: this.#userPassword,
+          id,
         };
         this.#displayUserAfterAndSwitchToTransactions(
           handleLoginUser,
@@ -264,10 +287,13 @@ class LoginView extends TranslationView {
     }
   }
 
-  #validateUserData(handleValidateUserData) {
+  #validateUserData(handleValidateUserData, handleGetUserId) {
+    const id = handleGetUserId(this.#userName);
+    console.log('CZZZZZZZZZZZZZZZZZZZZYYY', id);
     const user = {
       userName: this.#userName,
       userPassword: this.#userPassword,
+      id,
     };
 
     const {
@@ -291,14 +317,14 @@ class LoginView extends TranslationView {
   }
 
   // If there is automatic logging then skip listening and run validation from the model
-  bindValidateUserData(handleValidateUserData) {
+  bindValidateUserData(handleValidateUserData, handleGetUserId) {
     if (!this.autoLogin) {
       this.form.addEventListener('submit', (event) => {
         event.preventDefault();
-        this.#validateUserData(handleValidateUserData);
+        this.#validateUserData(handleValidateUserData, handleGetUserId);
       });
     } else {
-      this.#validateUserData(handleValidateUserData);
+      this.#validateUserData(handleValidateUserData, handleGetUserId);
     }
   }
 

@@ -8,26 +8,65 @@ class TransactionsModel extends TranslationModel {
   #transactionsUrl = 'https://api.npoint.io/38edf0c5f3eb9ac768bd';
   #HTTPRequestMethod = 'GET';
 
-  constructor(language, userName) {
+  constructor(
+    language,
+    userName,
+    refreshOnLanguageChange = false,
+    user = {},
+    isFirstLogin = false
+  ) {
     super(language);
     this.userName = userName;
+    this.refreshOnLanguageChange = refreshOnLanguageChange;
+    this.user = user;
+    this.usersTransactions =
+      JSON.parse(localStorage.getItem('usersTransactions')) || [];
+    this.isFirstLogin = isFirstLogin;
+  }
+
+  #getSingleUserTransactions() {
+    console.log('getTransactionsData', this.usersTransactions);
+    console.log(this.user);
+    this.userTransactions = this.usersTransactions.filter(
+      (userTransactionsDataObject) => {
+        const id = Object.keys(userTransactionsDataObject);
+        return id.toString() === this.user.id.toString();
+      }
+    )[0];
   }
 
   async getTransactionsData() {
-    try {
-      // const transactionsResponse = await fetch(this.#transactionsUrl, {
-      //   method: this.#HTTPRequestMethod,
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      // });
+    this.#getSingleUserTransactions();
+    console.log('kto tu', this.userTransactions);
+    console.log(this.user);
 
-      // if (!transactionsResponse.ok) {
-      //   const message = `An error has occurred: ${transactionsResponse.status}`;
-      //   throw new Error(message);
-      // }
-      //const allTransactionData = await transactionsResponse.json();
-      const allTransactionData = this.getSomeData();
+    if (this.refreshOnLanguageChange || this.userTransactions) {
+      console.log('elo', this.userTransactions);
+      const { allTransactions, transactionsTypes } = this.userTransactions[
+        this.user.id
+      ];
+      const returnedData = this.#returnConfigObjectForChartsAndTransactions(
+        allTransactions,
+        transactionsTypes
+      );
+      return returnedData[this.user.id];
+    }
+
+    try {
+      const transactionsResponse = await fetch(this.#transactionsUrl, {
+        method: this.#HTTPRequestMethod,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!transactionsResponse.ok) {
+        const message = `An error has occurred: ${transactionsResponse.status}`;
+        throw new Error(message);
+      }
+      const allTransactionData = await transactionsResponse.json();
+
+      console.log('Load daaaaata', allTransactionData);
 
       this.transactions = allTransactionData.transactions;
       this.transactionsTypes = allTransactionData.transacationTypes;
@@ -36,56 +75,83 @@ class TransactionsModel extends TranslationModel {
         this.transactionsTypes = this.translation.transactionTypes;
       }
 
-      const allTransactions = this.transactions;
+      // Add external data
+      const allTransactionsWithAdditionalLocation = this.transactions.map(
+        (transaction) => ({
+          location: `${this.translation.location}`,
+          ...transaction,
+        })
+      );
+
       const transactionsTypes = this.transactionsTypes;
 
-      const percentageOfTransactionsByType = this.#getPercentageOfTransactionsByType(
-        transactionsTypes,
-        allTransactions
-      );
-      const transactionsTypeSumData = this.#transactionsTypeSumDataConfig(
-        percentageOfTransactionsByType
-      );
-      const doughnutChartConfig = this.#doughnutChartConfig(
-        transactionsTypeSumData
+      const allTransactions = this.#mergeAllDataTransactionsWithRandomDataset(
+        allTransactionsWithAdditionalLocation
       );
 
-      const endOfDayBalance = this.#getEndOfDayBalance(allTransactions);
-
-      const endOfDayBalanceData = this.#endOfDayBalanceDataConfig(
-        endOfDayBalance
-      );
-
-      const barChartConfig = this.#barChartConfig(endOfDayBalanceData);
-
-      return {
-        doughnutChartConfig,
+      const returnedData = this.#returnConfigObjectForChartsAndTransactions(
         allTransactions,
-        transactionsTypes,
-        percentageOfTransactionsByType,
-        transactionsTypeSumData,
-        barChartConfig,
-      };
+        transactionsTypes
+      );
+      if (!this.userTransactions) {
+        this.usersTransactions.push(returnedData);
+        localStorage.setItem(
+          'usersTransactions',
+          JSON.stringify(this.usersTransactions)
+        );
+      }
+
+      return returnedData[this.user.id];
     } catch (err) {
       console.error(err);
     }
   }
 
-  // #getSumOfExpensesAndReceiptsList() {
-  //   this.amountSumList = [];
-  //   for (const [index, transactionType] of Object.entries(
-  //     this.transactionsTypes
-  //   )) {
-  //     const amountSum = this.transactions.reduce(
-  //       (acc, { amount, type }) =>
-  //         +index === +type ? acc + Math.abs(amount) : acc + 0,
-  //       0
-  //     );
+  #returnConfigObjectForChartsAndTransactions(
+    allTransactions,
+    transactionsTypes
+  ) {
+    transactionsTypes = this.translation.transactionTypes;
 
-  //     this.amountSumList.push({ transactionType, amountSum });
-  //   }
-  //   return this.amountSumList;
-  // }
+    const percentageOfTransactionsByType = this.#getPercentageOfTransactionsByType(
+      transactionsTypes,
+      allTransactions
+    );
+    const transactionsTypeSumData = this.#transactionsTypeSumDataConfig(
+      percentageOfTransactionsByType
+    );
+    const doughnutChartConfig = this.#doughnutChartConfig(
+      transactionsTypeSumData
+    );
+
+    const endOfDayBalance = this.#getEndOfDayBalance(allTransactions);
+
+    const endOfDayBalanceData = this.#endOfDayBalanceDataConfig(
+      endOfDayBalance
+    );
+
+    const barChartConfig = this.#barChartConfig(endOfDayBalanceData);
+
+    const key = `${this.user.id}`;
+    const returnedData = {};
+
+    returnedData[key] = {
+      doughnutChartConfig,
+      allTransactions,
+      transactionsTypes,
+      percentageOfTransactionsByType,
+      transactionsTypeSumData,
+      barChartConfig,
+    };
+    return returnedData;
+  }
+
+  #mergeAllDataTransactionsWithRandomDataset(allTransactions) {
+    if (this.isFirstLogin) {
+      return [...this.#getOneRandomDataset(), ...allTransactions];
+    }
+    return allTransactions;
+  }
 
   #getPercentageOfTransactionsByType(transactionsTypes, allTransactions) {
     const transactionsTypeSumList = [];
@@ -206,15 +272,6 @@ class TransactionsModel extends TranslationModel {
     return chartConfig;
   }
 
-  #renderRandomRGBColor(min = 0, max = 255) {
-    const randomChanelColor = () =>
-      Math.floor(Math.random() * (max - min) + min);
-    const red = randomChanelColor();
-    const green = randomChanelColor();
-    const blue = randomChanelColor();
-    return `rgb(${red}, ${green}, ${blue})`;
-  }
-
   #renderRedColor() {
     return 'rgb(204,51,51)';
   }
@@ -227,109 +284,84 @@ class TransactionsModel extends TranslationModel {
     return 'rgb(89,89,89)';
   }
 
-  getSomeData() {
-    return {
-      transactions: [
+  #getOneRandomDataset() {
+    const datasets = [
+      [
         {
-          date: '2022-11-12',
+          date: '2022-11-14',
           type: 2,
-          amount: -231.56,
-          balance: -4337.25,
-          description: 'Biedronka 13',
-        },
-        {
-          date: '2022-11-12',
-          type: 4,
-          amount: -31.56,
-          balance: 4572.18,
-          description: 'PayU Spółka Akcyjna',
-        },
-        {
-          date: '2022-11-12',
-          type: 3,
-          amount: 2137.69,
-          balance: 2420.47,
-          description: 'Wynagrodzenie z tytułu Umowy o Pracę',
-        },
-        {
-          date: '2022-11-10',
-          type: 2,
-          amount: -136,
-          // balance: 2555.55,
+          amount: -100,
           balance: 0,
-          description: 'Lidl',
+          description: 'Zakupy w sklepie spożywczym',
+          location: `${this.translation.location}`,
         },
         {
-          date: '2022-11-10',
+          date: '2022-11-15',
           type: 1,
-          amount: 25,
-          balance: 2847.66,
-          description: 'Zrzutka na prezent dla Grażyny',
-        },
-        {
-          date: '2022-11-09',
-          type: 2,
-          amount: -111.11,
-          balance: 3000,
-          description: 'Biedronka 13',
-        },
-        {
-          date: '2022-11-09',
-          type: 4,
-          amount: -78.33,
-          balance: 3027.51,
-          description: 'PayU Spółka Akcyjna',
-        },
-        {
-          date: '2022-11-09',
-          type: 4,
-          amount: -78.33,
-          balance: 3027.51,
-          description: 'PayU Spółka Akcyjna',
-        },
-        {
-          date: '2022-11-09',
-          type: 4,
-          amount: -78.33,
-          balance: 3027.51,
-          description: 'PayU Spółka Akcyjna',
-        },
-        {
-          date: '2022-11-09',
-          type: 4,
-          amount: -78.33,
-          balance: 3027.51,
-          description: 'PayU Spółka Akcyjna',
-        },
-        {
-          date: '2022-11-09',
-          type: 4,
-          amount: -78.33,
-          balance: 3027.51,
-          description: 'PayU Spółka Akcyjna',
-        },
-        {
-          date: '2022-11-09',
-          type: 4,
-          amount: -78.33,
-          balance: 3027.51,
-          description: 'PayU Spółka Akcyjna',
-        },
-        {
-          date: '2022-11-09',
-          type: 4,
-          amount: -78.33,
-          balance: 3027.51,
-          description: 'PayU Spółka Akcyjna',
+          amount: 1000,
+          balance: -2747.66,
+          description: 'Wpłata przez bankomat',
+          location: `${this.translation.location}`,
         },
       ],
-      transacationTypes: {
-        '1': 'Wpływy - inne',
-        '2': 'Wydatki - zakupy',
-        '3': 'Wpływy - wynagrodzenie',
-        '4': 'Wydatki - inne',
-      },
-    };
+      [
+        {
+          date: '2022-11-14',
+          type: 4,
+          amount: -200,
+          balance: -3547.66,
+          description: 'Opłata za rachunki',
+          location: `${this.translation.location}`,
+        },
+        {
+          date: '2022-11-15',
+          type: 1,
+          amount: 50,
+          balance: 0,
+          description: 'Prezent dla brata',
+          location: `${this.translation.location}`,
+        },
+      ],
+      [
+        {
+          date: '2022-11-14',
+          type: 2,
+          amount: -109.99,
+          balance: 0,
+          description: 'Sklep internetowy',
+          location: `${this.translation.location}`,
+        },
+        {
+          date: '2022-11-15',
+          type: 4,
+          amount: -39.99,
+          balance: -3333.22,
+          description: 'Abonament telefoniczny',
+          location: `${this.translation.location}`,
+        },
+      ],
+      [
+        {
+          date: '2022-11-14',
+          type: 4,
+          amount: -59.99,
+          balance: -2817.54,
+          description: 'Usługi streamingowe',
+          location: `${this.translation.location}`,
+        },
+        {
+          date: '2022-11-15',
+          type: 2,
+          amount: -149.99,
+          balance: 0,
+          description: 'Zakup sprzętu elektronicznego',
+          location: `${this.translation.location}`,
+        },
+      ],
+    ];
+    const max = datasets.length - 1;
+    const randomIndex = Math.floor(Math.random() * max);
+    return datasets[randomIndex];
   }
 
   #commitCurrentLoggedInUser(user) {
@@ -352,8 +384,15 @@ class TransactionsModel extends TranslationModel {
   }
 
   languageChange(language) {
+    // To prevent requesting api on every refresh
+    const refreshOnLanguageChange = true;
     new TransactionsController(
-      new TransactionsModel(language, this.userName),
+      new TransactionsModel(
+        language,
+        this.userName,
+        refreshOnLanguageChange,
+        this.user
+      ),
       new TransactionsView(language)
     );
   }
@@ -509,6 +548,7 @@ class TransactionsView extends TranslationView {
             <th>${this.translation.description}</th>
             <th>${this.translation.amount}</th>
             <th>${this.translation.balance}</th>
+            <th>${this.translation.localization}</th>
           </tr>
         </thead>
       `;
@@ -603,7 +643,7 @@ class TransactionsView extends TranslationView {
     this.tbody.innerHTML = '';
     let visited = 'empty';
     allTransactions.forEach(
-      ({ date, type, description, balance, amount }, index) => {
+      ({ date, type, description, balance, amount, location }, index) => {
         if (visited !== date) {
           const tr = document.createElement('tr');
           const transactionDate = document.createElement('td');
@@ -666,16 +706,18 @@ class TransactionsView extends TranslationView {
         hiddenTr.classList.add('hidden-row');
         const extendedInformation = document.createElement('td');
         extendedInformation.setAttribute('colspan', '3');
-        extendedInformation.textContent = `${this.translation.date}: ${date}, ${this.translation.balance}: ${balance}zł`;
+        extendedInformation.textContent = `${this.translation.date}: ${date}, ${this.translation.balance}: ${balance}zł, ${this.translation.localization}: ${location}`;
         hiddenTr.append(extendedInformation);
         this.tbody.append(hiddenTr);
 
         tr.addEventListener('click', () => {
           if (hiddenTr.classList.contains('hidden-row') && !this.isOpen) {
             hiddenTr.classList.remove('hidden-row');
+            tr.classList.add('active-row');
             this.isOpen = true;
           } else if (!hiddenTr.classList.contains('hidden-row')) {
             hiddenTr.classList.add('hidden-row');
+            tr.classList.remove('active-row');
             this.isOpen = false;
           }
         });
@@ -685,57 +727,63 @@ class TransactionsView extends TranslationView {
 
   createTableBody(allTransactions, transactionsTypes) {
     this.tbody.innerHTML = '';
-    allTransactions.forEach(({ date, type, balance, description, amount }) => {
-      const tr = document.createElement('tr');
-      const transactionDate = document.createElement('td');
-      transactionDate.textContent = `${date}`;
+    allTransactions.forEach(
+      ({ date, type, balance, description, amount, location }) => {
+        const tr = document.createElement('tr');
+        const transactionDate = document.createElement('td');
+        transactionDate.textContent = `${date}`;
 
-      const transactionTypeIconSpan = document.createElement('span');
-      transactionTypeIconSpan.classList.add('material-symbols-outlined');
+        const transactionTypeIconSpan = document.createElement('span');
+        transactionTypeIconSpan.classList.add('material-symbols-outlined');
 
-      const transactionType = document.createElement('td');
+        const transactionType = document.createElement('td');
 
-      const transactionDescription = document.createElement('td');
-      transactionDescription.innerHTML = `
+        const transactionDescription = document.createElement('td');
+        transactionDescription.innerHTML = `
         <p>${description}</p>
         <p class="small-text">(${transactionsTypes[type]})</p>
       `;
 
-      const transactionAmount = document.createElement('td');
-      transactionAmount.textContent = `${amount}zł`;
-      if (+amount > 0) {
-        transactionAmount.classList.add('green-font', 'font-size-bold');
-      } else {
-        transactionAmount.classList.add('red-font', 'font-size-bold');
+        const transactionAmount = document.createElement('td');
+        transactionAmount.textContent = `${amount}zł`;
+        if (+amount > 0) {
+          transactionAmount.classList.add('green-font', 'font-size-bold');
+        } else {
+          transactionAmount.classList.add('red-font', 'font-size-bold');
+        }
+
+        const transactionBalance = document.createElement('td');
+        transactionBalance.textContent = `${balance}zł`;
+
+        const transactionLocation = document.createElement('td');
+        transactionLocation.textContent = `${location}`;
+
+        if (+type === 1) {
+          transactionTypeIconSpan.textContent = 'account_balance_wallet';
+          transactionTypeIconSpan.classList.add('green-font');
+        } else if (+type === 2) {
+          transactionTypeIconSpan.textContent = 'shopping_cart';
+          transactionTypeIconSpan.classList.add('red-font');
+        } else if (+type === 3) {
+          transactionTypeIconSpan.textContent = 'payments';
+          transactionTypeIconSpan.classList.add('green-font');
+        } else if (+type === 4) {
+          transactionTypeIconSpan.textContent = 'shopping_bag';
+          transactionTypeIconSpan.classList.add('red-font');
+        }
+
+        transactionType.append(transactionTypeIconSpan);
+
+        tr.append(transactionDate);
+        tr.append(transactionType);
+        tr.append(transactionDescription);
+        tr.append(transactionAmount);
+        tr.append(transactionBalance);
+        tr.append(transactionLocation);
+
+        this.tbody.append(tr);
       }
-
-      const transactionBalance = document.createElement('td');
-      transactionBalance.textContent = `${balance}zł`;
-
-      if (+type === 1) {
-        transactionTypeIconSpan.textContent = 'account_balance_wallet';
-        transactionTypeIconSpan.classList.add('green-font');
-      } else if (+type === 2) {
-        transactionTypeIconSpan.textContent = 'shopping_cart';
-        transactionTypeIconSpan.classList.add('red-font');
-      } else if (+type === 3) {
-        transactionTypeIconSpan.textContent = 'payments';
-        transactionTypeIconSpan.classList.add('green-font');
-      } else if (+type === 4) {
-        transactionTypeIconSpan.textContent = 'shopping_bag';
-        transactionTypeIconSpan.classList.add('red-font');
-      }
-
-      transactionType.append(transactionTypeIconSpan);
-
-      tr.append(transactionDate);
-      tr.append(transactionType);
-      tr.append(transactionDescription);
-      tr.append(transactionAmount);
-      tr.append(transactionBalance);
-
-      this.tbody.append(tr);
-    });
+    );
   }
 
   #filterTransactionsByDescription(allTransactionData) {

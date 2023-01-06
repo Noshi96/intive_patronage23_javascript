@@ -134,16 +134,15 @@ th button {
 }
 
 .styled-table tbody tr.active-row {
-  font-weight: bold;
-  color: #009879;
+  background: #99d5c9;
 }
 
 th button[data-dir="asc"]::after {
-  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpolygon points='0, 0 8,0 4,8 8' fill='%23818688'/%3E%3C/svg%3E");
+  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpolygon points='0, 0 8,0 4,8 8' fill='%23ffffff'/%3E%3C/svg%3E");
 }
 
 th button[data-dir="desc"]::after {
-  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpolygon points='4 0,8 8,0 8' fill='%23818688'/%3E%3C/svg%3E");
+  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpolygon points='4 0,8 8,0 8' fill='%23ffffff'/%3E%3C/svg%3E");
 }
 
 
