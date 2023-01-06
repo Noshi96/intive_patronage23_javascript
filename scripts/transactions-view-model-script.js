@@ -24,9 +24,7 @@ class TransactionsModel extends TranslationModel {
     this.isFirstLogin = isFirstLogin;
   }
 
-  #getSingleUserTransactions() {
-    console.log('getTransactionsData', this.usersTransactions);
-    console.log(this.user);
+  #getTransactionsOfLoggedInUser() {
     this.userTransactions = this.usersTransactions.filter(
       (userTransactionsDataObject) => {
         const id = Object.keys(userTransactionsDataObject);
@@ -35,13 +33,9 @@ class TransactionsModel extends TranslationModel {
     )[0];
   }
 
-  async getTransactionsData() {
-    this.#getSingleUserTransactions();
-    console.log('kto tu', this.userTransactions);
-    console.log(this.user);
-
+  async getLoggedInUserTransactions() {
+    this.#getTransactionsOfLoggedInUser();
     if (this.refreshOnLanguageChange || this.userTransactions) {
-      console.log('elo', this.userTransactions);
       const { allTransactions, transactionsTypes } = this.userTransactions[
         this.user.id
       ];
@@ -66,8 +60,6 @@ class TransactionsModel extends TranslationModel {
       }
       const allTransactionData = await transactionsResponse.json();
 
-      console.log('Load daaaaata', allTransactionData);
-
       this.transactions = allTransactionData.transactions;
       this.transactionsTypes = allTransactionData.transacationTypes;
 
@@ -75,7 +67,7 @@ class TransactionsModel extends TranslationModel {
         this.transactionsTypes = this.translation.transactionTypes;
       }
 
-      // Add external data
+      // Add external field
       const allTransactionsWithAdditionalLocation = this.transactions.map(
         (transaction) => ({
           location: `${this.translation.location}`,
@@ -89,19 +81,20 @@ class TransactionsModel extends TranslationModel {
         allTransactionsWithAdditionalLocation
       );
 
-      const returnedData = this.#returnConfigObjectForChartsAndTransactions(
+      const returnedTransactionsData = this.#returnConfigObjectForChartsAndTransactions(
         allTransactions,
         transactionsTypes
       );
+
       if (!this.userTransactions) {
-        this.usersTransactions.push(returnedData);
+        this.usersTransactions.push(returnedTransactionsData);
         localStorage.setItem(
           'usersTransactions',
           JSON.stringify(this.usersTransactions)
         );
       }
 
-      return returnedData[this.user.id];
+      return returnedTransactionsData[this.user.id];
     } catch (err) {
       console.error(err);
     }
@@ -156,8 +149,8 @@ class TransactionsModel extends TranslationModel {
   #getPercentageOfTransactionsByType(transactionsTypes, allTransactions) {
     const transactionsTypeSumList = [];
     for (const [index, transactionType] of Object.entries(transactionsTypes)) {
-      let typeSum = allTransactions.reduce(
-        (acc, { type }) => (+index === +type ? acc + 1 : acc + 0),
+      const typeSum = allTransactions.reduce(
+        (acc, { type }) => (+index === +type ? acc + 1 : acc),
         0
       );
       transactionsTypeSumList.push({ transactionType, typeSum });
@@ -411,7 +404,7 @@ class TransactionsView extends TranslationView {
   }
 
   async initView() {
-    this.refreshListeners();
+    this.removeListeners();
     this.changeLanguageButton = document.querySelector(
       '#change-language-button'
     );
@@ -428,7 +421,6 @@ class TransactionsView extends TranslationView {
         <canvas id="bar-chart"></canvas>
       </section>
       <section class="transactions-section">
-
       </section>
     `;
     this.app.append(this.transactionsContainer);
@@ -444,46 +436,31 @@ class TransactionsView extends TranslationView {
     new Chart(ctx, config);
   }
 
-  async bindShowTransactionsData(handleGetTransactionsData) {
-    // const {
-    //   doughnutChartConfig,
-    //   dataForDisplayOnChart,
-    //   allTransactions,
-    //   transactionsTypes,
-    //   percentageOfTransactionsByType,
-    //   transactionsTypeSumData
-    // } = await handleGetTransactionsData();
-    const data = await handleGetTransactionsData();
-    console.log(data);
-    this.drawChart(this.doughnutCtx, data.doughnutChartConfig);
-    this.drawChart(this.barCtx, data.barChartConfig);
+  async bindShowTransactionsData(handleGetLoggedInUserTransactions) {
+    const {
+      doughnutChartConfig,
+      barChartConfig,
+      allTransactions,
+      transactionsTypes,
+    } = await handleGetLoggedInUserTransactions();
+    this.drawChart(this.doughnutCtx, doughnutChartConfig);
+    this.drawChart(this.barCtx, barChartConfig);
 
     // Mobile Transaction table view
+    let isMobile = true;
     if (window.innerWidth < 769) {
-      this.createFilterTableInput(
-        data.allTransactions,
-        data.transactionsTypes,
-        true
-      );
+      this.createFilterTableInput(allTransactions, transactionsTypes, isMobile);
       this.createMobileTransactionsTableHeader(
-        data.allTransactions,
-        data.transactionsTypes
+        allTransactions,
+        transactionsTypes
       );
-      this.createMobileTableBody(data.allTransactions, data.transactionsTypes);
+      this.createMobileTableBody(allTransactions, transactionsTypes);
     } else {
-      this.createFilterTableInput(
-        data.allTransactions,
-        data.transactionsTypes,
-        false
-      );
-      this.createTransactionsTableHeader(
-        data.allTransactions,
-        data.transactionsTypes
-      );
-      this.createTableBody(data.allTransactions, data.transactionsTypes);
+      isMobile = false;
+      this.createFilterTableInput(allTransactions, transactionsTypes, isMobile);
+      this.createTransactionsTableHeader(allTransactions, transactionsTypes);
+      this.createTableBody(allTransactions, transactionsTypes);
     }
-
-    console.log('no elo elo');
   }
 
   createElement(tag, className) {
@@ -516,24 +493,18 @@ class TransactionsView extends TranslationView {
     `;
 
     this.navListLoggedIn = this.createElement('ul', 'nav-list-logged-in');
-
     this.loggedName = document.createElement('li');
     this.loggedName.setAttribute('id', 'logged-name');
-
     this.logoutButton = document.createElement('li');
     this.logoutButton.setAttribute('id', 'log-out');
     this.logoutButton.classList.add('button-style');
-
     this.logoutButton.textContent = this.translation.logoutText;
-
     this.loggedName.textContent = userName;
     this.navListLoggedIn.append(this.loggedName);
     this.navListLoggedIn.append(this.logoutButton);
     this.headerNav.innerHTML = '';
     this.headerNav.append(this.navListLoggedIn);
     this.headerNav.append(this.languageButtonContainer);
-
-    console.log('init transactions');
   }
 
   createTransactionsTableHeader(allTransactions, transactionsTypes) {
@@ -657,6 +628,7 @@ class TransactionsView extends TranslationView {
           this.tbody.append(tr);
           visited = date;
         }
+
         const tr = document.createElement('tr');
         tr.classList.add(`hidden-id-${index}`, 'show-color-row');
 
@@ -664,15 +636,14 @@ class TransactionsView extends TranslationView {
         transactionTypeIconSpan.classList.add('material-symbols-outlined');
 
         const transactionType = document.createElement('td');
-
         const transactionDescription = document.createElement('td');
         transactionDescription.innerHTML = `
         <p>${description}</p>
         <p class="small-text">(${transactionsTypes[type]})</p>
       `;
-
         const transactionAmount = document.createElement('td');
         transactionAmount.textContent = `${amount}zł`;
+
         if (+amount > 0) {
           transactionAmount.classList.add('green-font', 'font-size-bold');
         } else {
@@ -694,7 +665,6 @@ class TransactionsView extends TranslationView {
         }
 
         transactionType.append(transactionTypeIconSpan);
-
         tr.append(transactionType);
         tr.append(transactionDescription);
         tr.append(transactionAmount);
@@ -730,6 +700,7 @@ class TransactionsView extends TranslationView {
     allTransactions.forEach(
       ({ date, type, balance, description, amount, location }) => {
         const tr = document.createElement('tr');
+
         const transactionDate = document.createElement('td');
         transactionDate.textContent = `${date}`;
 
@@ -737,15 +708,15 @@ class TransactionsView extends TranslationView {
         transactionTypeIconSpan.classList.add('material-symbols-outlined');
 
         const transactionType = document.createElement('td');
-
         const transactionDescription = document.createElement('td');
+
         transactionDescription.innerHTML = `
         <p>${description}</p>
         <p class="small-text">(${transactionsTypes[type]})</p>
       `;
-
         const transactionAmount = document.createElement('td');
         transactionAmount.textContent = `${amount}zł`;
+
         if (+amount > 0) {
           transactionAmount.classList.add('green-font', 'font-size-bold');
         } else {
@@ -773,14 +744,12 @@ class TransactionsView extends TranslationView {
         }
 
         transactionType.append(transactionTypeIconSpan);
-
         tr.append(transactionDate);
         tr.append(transactionType);
         tr.append(transactionDescription);
         tr.append(transactionAmount);
         tr.append(transactionBalance);
         tr.append(transactionLocation);
-
         this.tbody.append(tr);
       }
     );
@@ -789,10 +758,8 @@ class TransactionsView extends TranslationView {
   #filterTransactionsByDescription(allTransactionData) {
     const input = document.getElementById('myInput');
     const filter = input.value.toLowerCase();
-    const filteredTransactions = allTransactionData.filter(
-      ({ description }) => {
-        return description.toLowerCase().includes(filter.toLowerCase());
-      }
+    const filteredTransactions = allTransactionData.filter(({ description }) =>
+      description.toLowerCase().includes(filter.toLowerCase())
     );
     return filteredTransactions;
   }
@@ -805,7 +772,6 @@ class TransactionsView extends TranslationView {
         return a.type > b.type ? -1 : 1;
       }
     });
-    console.log(sorted);
     return sorted;
   }
 

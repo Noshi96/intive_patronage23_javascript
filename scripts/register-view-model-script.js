@@ -39,7 +39,7 @@ class RegisterModel extends TranslationModel {
       // automatic login as soon as registration is correct
       const accessForAutoLogin = true;
       const isFirstLogin = true;
-      const loginController = new LoginController(
+      new LoginController(
         new LoginModel(accessForAutoLogin, this.language),
         new LoginView(accessForAutoLogin, this.language),
         sameUserWithoutHash,
@@ -173,7 +173,6 @@ class RegisterModel extends TranslationModel {
   }
 
   languageChange(language) {
-    console.log('languageChange RegisterController');
     new RegisterController(
       new RegisterModel(language),
       new RegisterView(language)
@@ -193,7 +192,7 @@ class RegisterView extends TranslationView {
   }
 
   initView() {
-    this.refreshListeners();
+    this.removeListeners();
     this.app = document.querySelector('#root');
     this.app.innerHTML = '';
 
@@ -347,20 +346,4 @@ class RegisterView extends TranslationView {
         handleSwitchViewToLogin(false, this.language);
       });
   }
-
-  // bindLanguageChange() {
-  //   document
-  //     .querySelector('#change-language-button')
-  //     .addEventListener('click', () => {
-  //       this.changeLanguageButton.textContent =
-  //         this.changeLanguageButton.textContent === 'en' ? 'pl' : 'en';
-
-  //       this.language = this.language === 'pl' ? 'en' : 'pl';
-  //       console.log('register view');
-  //       new RegisterController(
-  //         new RegisterModel(this.language),
-  //         new RegisterView(this.language)
-  //       );
-  //     });
-  // }
 }

@@ -49,7 +49,7 @@
 }
 
 #myInput {
-  background-image: url('../img/icons8-search-24.png');
+  background-image: url('../img/icons8-search-24.png'); /* https://icons8.com*/
   background-position: 10px 10px;
   background-repeat: no-repeat;
   width: 100%;
@@ -59,7 +59,7 @@
   margin-bottom: 12px;
 }
 
-.single-transaction{
+.single-transaction {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
@@ -84,11 +84,11 @@
   padding: 1rem 0;
 }
 
-.hidden-row{
+.hidden-row {
   display: none;
 }
 
-.show-row{
+.show-row {
   display: '';
 }
 
@@ -152,7 +152,7 @@ th button[data-dir="desc"]::after {
   }
 }
 
-@media only screen and (min-width: 769px){
+@media only screen and (min-width: 769px) {
   .show-color-row {
     background-color: transparent;
   }

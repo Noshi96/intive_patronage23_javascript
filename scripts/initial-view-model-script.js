@@ -44,7 +44,7 @@ class InitialView extends TranslationView {
   }
 
   initView = () => {
-    this.refreshListeners();
+    this.removeListeners();
     this.app = document.querySelector('#root');
     this.header = document.querySelector('.header');
     this.headerNav = this.createElement('nav', 'header-nav');
@@ -108,15 +108,4 @@ class InitialView extends TranslationView {
         handleInitLogin();
       });
   }
-
-  // bindLanguageChange() {
-  //   this.changeLanguageButton.addEventListener('click', () => {
-  //     this.language = this.language === 'pl' ? 'en' : 'pl';
-  //     console.log('initial');
-  //     new InitialController(
-  //       new InitialModel(this.language),
-  //       new InitialView(this.language)
-  //     );
-  //   });
-  // }
 }

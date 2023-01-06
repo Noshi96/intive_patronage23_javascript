@@ -85,9 +85,7 @@ class LoginModel extends TranslationModel {
     this.#isUserDataValid =
       userNameIsValidMessage === 'valid' &&
       userPasswordIsValidMessage === 'valid';
-    console.log('validateUserData - loginModel');
-    console.log(user);
-    //debugger;
+
     if (this.#isUserDataValid) {
       const loggedInUser = {
         userName,
@@ -111,17 +109,17 @@ class LoginModel extends TranslationModel {
   }
 
   getUserId(name) {
-    return name
-      ? this.users
-          .filter(
-            ({ userName, userEmail }) => name === userName || name === userEmail
-          )
-          .at(0).id
-      : '';
+    if (name) {
+      const existingUser = this.users.filter(
+        ({ userName, userEmail }) => name === userName || name === userEmail
+      );
+      return existingUser.length !== 0 ? existingUser[0].id : '';
+    } else {
+      return '';
+    }
   }
 
   switchViewToTransactions(user, isFirstLogin = false) {
-    console.log('switchViewToTransactions', user);
     new TransactionsController(
       new TransactionsModel(
         this.language,
@@ -142,7 +140,6 @@ class LoginModel extends TranslationModel {
   }
 
   languageChange(language) {
-    console.log('languageChange LoginController');
     new LoginController(
       new LoginModel(this.autoLogin, language),
       new LoginView(this.autoLogin, language)
@@ -163,9 +160,9 @@ class LoginView extends TranslationView {
   }
 
   initView() {
-    this.refreshListeners();
+    this.removeListeners();
     this.app = document.querySelector('#root');
-    // If there is switch don't clear
+
     if (!this.autoLogin) {
       this.app.innerHTML = '';
     }
@@ -222,7 +219,6 @@ class LoginView extends TranslationView {
       '.error-user-password'
     );
 
-    // If there is switch don't append
     if (!this.autoLogin) {
       this.app.append(this.formContainer);
     }
@@ -252,7 +248,6 @@ class LoginView extends TranslationView {
     handleSwitchViewToTransactions
   ) {
     const userToLogin = handleLoginUser(user);
-    console.log('displayUserAfterAndSwitchToTransactions', user);
     if (userToLogin?.userName) {
       handleSwitchViewToTransactions(userToLogin);
     }
@@ -289,12 +284,13 @@ class LoginView extends TranslationView {
 
   #validateUserData(handleValidateUserData, handleGetUserId) {
     const id = handleGetUserId(this.#userName);
-    console.log('CZZZZZZZZZZZZZZZZZZZZYYY', id);
     const user = {
       userName: this.#userName,
       userPassword: this.#userPassword,
       id,
     };
+    this.userPasswordError.innerHTML = '';
+    this.userNameError.innerHTML = '';
 
     const {
       userNameIsValidMessage,
@@ -333,20 +329,4 @@ class LoginView extends TranslationView {
     if (registerNavButton)
       registerNavButton.addEventListener('click', handleSwitchViewToRegister);
   }
-
-  // bindLanguageChange() {
-  //   document
-  //     .querySelector('#change-language-button')
-  //     .addEventListener('click', () => {
-  //       this.changeLanguageButton.textContent =
-  //         this.changeLanguageButton.textContent === 'en' ? 'pl' : 'en';
-
-  //       this.language = this.language === 'pl' ? 'en' : 'pl';
-  //       console.log('login view');
-  //       new LoginController(
-  //         new LoginModel(this.autoLogin, this.language),
-  //         new LoginView(this.autoLogin, this.language)
-  //       );
-  //     });
-  // }
 }

@@ -74,6 +74,10 @@
 
 #change-language-button {
   cursor: pointer;
+  color: #ffffff;
+  background: #333333;
+  border: 1px solid #333333;
+  border-radius: 5px;
 }
 
 @media only screen and (min-width: 769px){

@@ -1,3 +1,5 @@
+'use strict';
+
 const en = {
   initialText: `Take part and register now so you don't miss the opportunity. Promotion with limited time. Hurry up! Be the first! Register!`,
   registerText: 'Sign up',
@@ -156,7 +158,6 @@ class TranslationView {
   }
 
   bindLanguageChange(handleLanguageChange) {
-    console.log('main', this.language);
     document
       .querySelector('#change-language-button')
       .addEventListener('click', () => {
@@ -167,8 +168,7 @@ class TranslationView {
       });
   }
 
-  refreshListeners() {
-    console.log('refresh');
+  removeListeners() {
     const changeLanguageButton = document.getElementById(
       'change-language-button'
     );

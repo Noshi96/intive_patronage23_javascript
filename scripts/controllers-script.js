@@ -104,11 +104,11 @@ class TransactionsController extends TranslationController {
       this.handleLogoutUser,
       this.handleSwitchViewToInitial
     );
-    this.view.bindShowTransactionsData(this.handleGetTransactionsData);
+    this.view.bindShowTransactionsData(this.handleGetLoggedInUserTransactions);
   }
 
-  handleGetTransactionsData = () => {
-    return this.model.getTransactionsData();
+  handleGetLoggedInUserTransactions = () => {
+    return this.model.getLoggedInUserTransactions();
   };
 
   handleLogoutUser = () => {
@@ -163,7 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const { currentLoggedInUser } = initialController;
   if (currentLoggedInUser) {
     const { currentLoggedInUser } = initialController;
-    //debugger;
     new LoginController(
       new LoginModel(true),
       new LoginView(true, this.language),
