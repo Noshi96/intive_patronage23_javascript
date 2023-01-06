@@ -6,7 +6,8 @@ body {
   font-family: 'Open Sans', sans-serif;
   height: 100vh;
   margin: 0;
-  background-image: url('/../img/pexels-adam-krypel-64989941.webp');  /*from www.pexels.com*/
+  background-image: url('../img/pexels-adam-krypel-64989941.webp');  /*from www.pexels.com*/
+  
   background-size: cover;
 }
 

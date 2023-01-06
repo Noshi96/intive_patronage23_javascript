@@ -1,29 +1,33 @@
 'use strict';
 
-const initialText =
-  'Weź udział i zarejestruj się już teraz, żeby nie stracić okazji. Promocja z ograniczonym czasem. Śpiesz się! Bądź pierwszy! Zarejestruj się!';
-
-const registerText = 'Rejestracja';
-const loginText = 'Logowanie';
-
 /**
  * @class InitialModel
  *
  * Manages the data of the application.
  */
-class InitialModel {
-  constructor() {}
+class InitialModel extends TranslationModel {
+  constructor(language) {
+    super(language);
+  }
 
   initRegister() {
-    globalRegisterController = new RegisterController(
-      new RegisterModel(),
-      new RegisterView()
+    new RegisterController(
+      new RegisterModel(this.language),
+      new RegisterView(this.language)
     );
   }
+
   initLogin() {
-    globalLoginController = new LoginController(
-      new LoginModel(),
-      new LoginView()
+    new LoginController(
+      new LoginModel(false, this.language),
+      new LoginView(false, this.language)
+    );
+  }
+
+  languageChange(language) {
+    new InitialController(
+      new InitialModel(language),
+      new InitialView(language)
     );
   }
 }
@@ -33,36 +37,54 @@ class InitialModel {
  *
  * Visual representation of the model.
  */
-class InitialView {
-  constructor() {
+class InitialView extends TranslationView {
+  constructor(language) {
+    super(language);
+    this.initView();
+  }
+
+  initView = () => {
+    this.removeListeners();
     this.app = document.querySelector('#root');
     this.header = document.querySelector('.header');
     this.headerNav = this.createElement('nav', 'header-nav');
-    this.app.innerHTML = '';
-    this.header.innerHTML = '';
-
     this.initialContainer = this.createElement('div');
     this.initialContainer.classList.add('initial-container');
+    this.app.innerHTML = '';
+    this.header.innerHTML = '';
     this.headerNav.innerHTML = `
-      <ul class="nav-list-non-logged">
-        <li class="button-style" id="login-nav-button">
-          ${loginText}
-        </li>
-        <li class="button-style" id="register-nav-button">
-          ${registerText}
-        </li>
-      </ul>
-    `;
+    <ul class="nav-list-non-logged">
+      <li class="button-style" id="login-nav-button">
+        ${this.translation.loginText}
+      </li>
+      <li class="button-style" id="register-nav-button">
+        ${this.translation.registerText}
+      </li>
+    </ul>
+  `;
 
     this.initialContainer.innerHTML = `
-      <div class="initial-container">
-       <p>${initialText}</p>
-      </div>
+       <p>${this.translation.initialText}</p>
     `;
 
     this.header.append(this.headerNav);
     this.app.append(this.initialContainer);
-  }
+
+    this.languageButtonContainer = this.createElement(
+      'div',
+      'language-button-container'
+    );
+    this.languageButtonContainer.innerHTML = `
+        <button id="change-language-button">${
+          this.language === 'en' ? 'pl' : 'en'
+        }</button>
+    `;
+
+    this.headerNav.append(this.languageButtonContainer);
+    this.changeLanguageButton = this.languageButtonContainer.querySelector(
+      '#change-language-button'
+    );
+  };
 
   createElement(tag, className) {
     const element = document.createElement(tag);

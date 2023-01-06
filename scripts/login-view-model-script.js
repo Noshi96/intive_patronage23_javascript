@@ -1,32 +1,17 @@
 'use strict';
 
-const loginTitle = 'Zaloguj się';
-const loginButtonText = 'Zaloguj';
-
-const incentiveToOpenAccountText =
-  'Załóż konto na tego maila klikając w Rejestracja.';
-const incorrectPasswordOrUsername = 'Incorrect password or user name.';
-
-const userNameInputLabel = 'Nazwa użytkownika';
-const userPasswordInputLabel = 'Hasło';
-
-const userNameInputLoginText = 'Podaj nazwę użytkownika';
-const userPasswordInputLoginText = 'Podaj hasło';
-
-const logoutText = 'Wyloguj';
-
 /**
  * @class LoginModel
  *
  * Manages the data of the application.
  */
-class LoginModel {
-  constructor(autoLogin = false) {
+class LoginModel extends TranslationModel {
+  constructor(autoLogin = false, language) {
+    super(language);
     this.autoLogin = autoLogin;
     this.users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
   }
 
-  #userLoggedIn = false;
   #isUserDataValid = false;
 
   #commitCurrentLoggedInUser(user) {
@@ -40,12 +25,13 @@ class LoginModel {
     const existingUser = this.users.filter(
       ({ userName, userEmail }) => userName === name || userEmail === name
     );
+    this.id = existingUser.id;
 
     if (existingUser.length !== 1 && isEmailValid) {
-      return incentiveToOpenAccountText;
+      return this.translation.incentiveToOpenAccountText;
     }
     if (existingUser.length !== 1) {
-      return incorrectPasswordOrUsername;
+      return this.translation.incorrectPasswordOrUsername;
     }
 
     return 'valid';
@@ -57,7 +43,7 @@ class LoginModel {
     );
 
     if (existingUser.length !== 1) {
-      return incorrectPasswordOrUsername;
+      return this.translation.incorrectPasswordOrUsername;
     }
 
     const incomingUserHashPassword = this.#hashUserPassword(password);
@@ -67,7 +53,7 @@ class LoginModel {
       incomingUserHashPassword.toString();
 
     if (!isPasswordValid) {
-      return incorrectPasswordOrUsername;
+      return this.translation.incorrectPasswordOrUsername;
     }
 
     return 'valid';
@@ -84,7 +70,7 @@ class LoginModel {
   }
 
   validateUserData(user) {
-    const { userName, userPassword } = user;
+    const { userName, userPassword, id } = user;
 
     if (!userName && !userPassword) {
       this.#isUserDataValid = false;
@@ -104,6 +90,7 @@ class LoginModel {
       const loggedInUser = {
         userName,
         userPassword,
+        id,
       };
       this.#commitCurrentLoggedInUser(loggedInUser);
     }
@@ -114,29 +101,49 @@ class LoginModel {
     };
   }
 
-  #login(userName) {
-    this.#userLoggedIn = true;
-    return userName;
-  }
-
-  #logout() {
-    this.#commitCurrentLoggedInUser(null);
-    new InitialController(new InitialModel(), new InitialView());
-    this.#userLoggedIn = false;
-  }
-
   loginUser(user) {
-    const { userName } = user;
     if (this.#isUserDataValid) {
       this.#isUserDataValid = false;
-      return this.#login(userName);
+      return user;
     }
   }
 
-  logoutUser() {
-    if (this.#userLoggedIn) {
-      this.#logout();
+  getUserId(name) {
+    if (name) {
+      const existingUser = this.users.filter(
+        ({ userName, userEmail }) => name === userName || name === userEmail
+      );
+      return existingUser.length !== 0 ? existingUser[0].id : '';
+    } else {
+      return '';
     }
+  }
+
+  switchViewToTransactions(user, isFirstLogin = false) {
+    new TransactionsController(
+      new TransactionsModel(
+        this.language,
+        user.userName,
+        false,
+        user,
+        isFirstLogin
+      ),
+      new TransactionsView(this.language)
+    );
+  }
+
+  switchViewToRegister() {
+    new RegisterController(
+      new RegisterModel(this.language),
+      new RegisterView(this.language)
+    );
+  }
+
+  languageChange(language) {
+    new LoginController(
+      new LoginModel(this.autoLogin, language),
+      new LoginView(this.autoLogin, language)
+    );
   }
 }
 
@@ -145,13 +152,17 @@ class LoginModel {
  *
  * Visual representation of the model.
  */
-class LoginView {
-  constructor(autoLogin = false) {
+class LoginView extends TranslationView {
+  constructor(autoLogin = false, language) {
+    super(language);
     this.autoLogin = autoLogin;
+    this.initView();
+  }
 
+  initView() {
+    this.removeListeners();
     this.app = document.querySelector('#root');
-    this.headerNav = document.querySelector('.header-nav');
-    // If there is switch don't clear
+
     if (!this.autoLogin) {
       this.app.innerHTML = '';
     }
@@ -163,38 +174,40 @@ class LoginView {
     this.registerNavButton.classList.remove('hide');
     this.loginNavButton.classList.add('hide');
 
+    this.registerNavButton.textContent = this.translation.registerText;
+
     this.formContainer = this.createElement('div');
     this.formContainer.classList.add('form-container');
 
     this.formContainer.innerHTML = `
-      <h1 class="form-title">${loginTitle}</h1>
+      <h1 class="form-title">${this.translation.loginTitle}</h1>
       <form class="form-style">
         <div class="single-input">
-          <label for="user-name">${userNameInputLabel}</label>
+          <label for="user-name">${this.translation.userNameInputLabel}</label>
           <input
             id="username"
             type="text"
-            placeholder="${userNameInputLoginText}"
+            placeholder="${this.translation.userNameInputLoginText}"
             name="user-name"
             required 
             minlength="6"
-            maxlength="16"
+            maxlength="50"
           />
           <span class="error-user-name error" aria-live="polite"></span>
         </div>
         <div class="single-input">
-          <label for="user-password">${userPasswordInputLabel}</label>
+          <label for="user-password">${this.translation.userPasswordInputLabel}</label>
           <input
             id="password"
             type="password"
-            placeholder="${userPasswordInputLoginText}"
+            placeholder="${this.translation.userPasswordInputLoginText}"
             name="user-password"
             required 
             minlength="6"
           />
           <span class="error-user-password error" aria-live="polite"></span>
         </div>
-        <button class="form-button">${loginButtonText}</button>
+        <button class="form-button">${this.translation.loginButtonText}</button>
       </form>
     `;
 
@@ -206,20 +219,13 @@ class LoginView {
       '.error-user-password'
     );
 
-    this.logoutButton = document.createElement('li');
-    this.logoutButton.setAttribute('id', 'log-out');
-    this.logoutButton.classList.add('button-style');
-    this.logoutButton.textContent = logoutText;
-
-    this.navListLoggedIn = this.createElement('ul', 'nav-list-logged-in');
-
-    this.loggedName = document.createElement('li');
-    this.loggedName.setAttribute('id', 'logged-name');
-
-    // If there is switch don't append
     if (!this.autoLogin) {
       this.app.append(this.formContainer);
     }
+
+    this.changeLanguageButton = document.querySelector(
+      '#change-language-button'
+    );
   }
 
   get #userName() {
@@ -236,45 +242,55 @@ class LoginView {
     return element;
   }
 
-  #displayUserAfterLogin(handleLoginUser, user) {
-    const name = handleLoginUser(user);
-    if (name) {
-      this.loggedName.textContent = name;
-      this.navListLoggedIn.append(this.loggedName);
-      this.navListLoggedIn.append(this.logoutButton);
-      this.headerNav.innerHTML = '';
-      this.headerNav.append(this.navListLoggedIn);
+  #displayUserAfterAndSwitchToTransactions(
+    handleLoginUser,
+    user,
+    handleSwitchViewToTransactions
+  ) {
+    const userToLogin = handleLoginUser(user);
+    if (userToLogin?.userName) {
+      handleSwitchViewToTransactions(userToLogin);
     }
   }
 
-  bindLogoutUser(handleLogoutUser) {
-    this.logoutButton.addEventListener('click', (event) => {
-      event.preventDefault();
-      this.navListLoggedIn.innerHTML = '';
-      handleLogoutUser();
-    });
-  }
-
-  bindLoginUser(handleLoginUser) {
+  bindLoginUser(
+    handleLoginUser,
+    handleSwitchViewToTransactions,
+    handleGetUserId
+  ) {
     if (!this.autoLogin) {
       this.form.addEventListener('submit', (event) => {
         event.preventDefault();
+        const id = handleGetUserId(this.#userName);
         const user = {
           userName: this.#userName,
           userPassword: this.#userPassword,
+          id,
         };
-        this.#displayUserAfterLogin(handleLoginUser, user);
+        this.#displayUserAfterAndSwitchToTransactions(
+          handleLoginUser,
+          user,
+          handleSwitchViewToTransactions
+        );
       });
     } else {
-      this.#displayUserAfterLogin(handleLoginUser, {});
+      this.#displayUserAfterAndSwitchToTransactions(
+        handleLoginUser,
+        {},
+        handleSwitchViewToTransactions
+      );
     }
   }
 
-  #validateUserData(handleValidateUserData) {
+  #validateUserData(handleValidateUserData, handleGetUserId) {
+    const id = handleGetUserId(this.#userName);
     const user = {
       userName: this.#userName,
       userPassword: this.#userPassword,
+      id,
     };
+    this.userPasswordError.innerHTML = '';
+    this.userNameError.innerHTML = '';
 
     const {
       userNameIsValidMessage,
@@ -297,14 +313,20 @@ class LoginView {
   }
 
   // If there is automatic logging then skip listening and run validation from the model
-  bindValidateUserData(handleValidateUserData) {
+  bindValidateUserData(handleValidateUserData, handleGetUserId) {
     if (!this.autoLogin) {
       this.form.addEventListener('submit', (event) => {
         event.preventDefault();
-        this.#validateUserData(handleValidateUserData);
+        this.#validateUserData(handleValidateUserData, handleGetUserId);
       });
     } else {
-      this.#validateUserData(handleValidateUserData);
+      this.#validateUserData(handleValidateUserData, handleGetUserId);
     }
+  }
+
+  bindSwitchViewToRegister(handleSwitchViewToRegister) {
+    const registerNavButton = document.querySelector('#register-nav-button');
+    if (registerNavButton)
+      registerNavButton.addEventListener('click', handleSwitchViewToRegister);
   }
 }
