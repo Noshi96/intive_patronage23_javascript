@@ -1,7 +1,7 @@
-let globalLoginController = null;
-let globalRegisterController = null;
+'use strict';
+
 /**
- * @class Controller
+ * @class LoginController
  *
  * Links the user input and the view output.
  *
@@ -9,73 +9,145 @@ let globalRegisterController = null;
  * @param view
  * @param registeredUser Optional parameter if you want to log in right after registration
  */
-class LoginController {
-  constructor(model, view, registeredUser) {
+class LoginController extends TranslationController {
+  constructor(model, view, registeredUser, isFirstLogin = false) {
+    super(model, view);
     this.model = model;
     this.view = view;
     this.registeredUser = registeredUser;
+    this.isFirstLogin = isFirstLogin;
 
-    this.view.bindValidateUserData(this.handleValidateUserData);
-    this.view.bindLoginUser(this.handleLoginUser);
-    this.view.bindLogoutUser(this.handleLogoutUser);
+    this.view.bindLanguageChange(this.handleLanguageChange);
+    this.view.bindValidateUserData(
+      this.handleValidateUserData,
+      this.handleGetUserId
+    );
+    this.view.bindLoginUser(
+      this.handleLoginUser,
+      this.handleSwitchViewToTransactions,
+      this.handleGetUserId
+    );
+    this.view.bindSwitchViewToRegister(this.handleSwitchViewToRegister);
   }
 
+  handleGetUserId = (name) => {
+    return this.model.getUserId(name);
+  };
+
   handleValidateUserData = (user) => {
-    return this.registeredUser
-      ? this.model.validateUserData(this.registeredUser)
-      : this.model.validateUserData(user);
+    return this.model.validateUserData(this.registeredUser || user);
   };
 
   handleLoginUser = (user) => {
-    return this.registeredUser
-      ? this.model.loginUser(this.registeredUser)
-      : this.model.loginUser(user);
+    return this.model.loginUser(this.registeredUser || user);
   };
 
-  handleLogoutUser = () => {
-    this.model.logoutUser();
+  handleSwitchViewToTransactions = (user) => {
+    this.model.switchViewToTransactions(user, this.isFirstLogin);
+  };
+
+  handleSwitchViewToRegister = () => {
+    this.model.switchViewToRegister();
   };
 }
 
 /**
- * @class Controller
+ * @class RegisterController
  *
  * Links the user input and the view output.
  *
  * @param model
  * @param view
  */
-class RegisterController {
+class RegisterController extends TranslationController {
   constructor(model, view) {
+    super(model, view);
     this.model = model;
     this.view = view;
 
+    this.view.bindLanguageChange(this.handleLanguageChange);
     this.view.bindValidateUserData(this.handleValidateUserData);
     this.view.bindAddUser(this.handleAddUser);
+    this.view.bindSwitchViewToLogin(this.handleSwitchViewToLogin);
   }
 
-  handleAddUser = (userProp) => {
-    this.model.addUser(userProp);
+  handleAddUser = (user) => {
+    this.model.addUser(user);
   };
 
   handleValidateUserData = (user) => {
     return this.model.validateUserData(user);
   };
+
+  handleSwitchViewToLogin = (autoLogin, language) => {
+    this.model.switchViewToLogin(autoLogin, language);
+  };
 }
 
-class InitialController {
+/**
+ * @class TransactionsController
+ *
+ * Links the user input and the view output.
+ *
+ * @param model
+ * @param view
+ */
+class TransactionsController extends TranslationController {
   constructor(model, view) {
+    super(model, view);
     this.model = model;
     this.view = view;
-    this.view.bindInitRegister(this.handlerInitRegister);
-    this.view.bindInitLogin(this.handlerInitLogin);
+
+    this.view.bindLoadHeaderAndUserName(this.handleGetLoggedInUserName);
+    this.view.bindLanguageChange(this.handleLanguageChange);
+    this.view.bindLogoutUser(
+      this.handleLogoutUser,
+      this.handleSwitchViewToInitial
+    );
+    this.view.bindShowTransactionsData(this.handleGetLoggedInUserTransactions);
+  }
+
+  handleGetLoggedInUserTransactions = () => {
+    return this.model.getLoggedInUserTransactions();
+  };
+
+  handleLogoutUser = () => {
+    this.model.logoutUser();
+  };
+
+  handleGetLoggedInUserName = () => {
+    return this.model.getLoggedInUserName();
+  };
+
+  handleSwitchViewToInitial = () => {
+    this.model.switchViewToInitial();
+  };
+}
+
+/**
+ * @class InitialController
+ *
+ * Links the user input and the view output.
+ *
+ * @param model
+ * @param view
+ */
+class InitialController extends TranslationController {
+  constructor(model, view) {
+    super(model, view);
+    this.model = model;
+    this.view = view;
+
+    this.view.bindLanguageChange(this.handleLanguageChange);
+    this.view.bindInitRegister(this.handleInitRegister);
+    this.view.bindInitLogin(this.handleInitLogin);
     this.currentLoggedInUser =
       JSON.parse(localStorage.getItem('currentLoggedInUser')) || null;
   }
-  handlerInitRegister = () => {
+  handleInitRegister = () => {
     this.model.initRegister();
   };
-  handlerInitLogin = () => {
+  handleInitLogin = () => {
     this.model.initLogin();
   };
 }
@@ -88,11 +160,12 @@ document.addEventListener('DOMContentLoaded', () => {
   );
 
   // Automatic login if u are logged in
-  if (initialController.currentLoggedInUser) {
+  const { currentLoggedInUser } = initialController;
+  if (currentLoggedInUser) {
     const { currentLoggedInUser } = initialController;
     new LoginController(
       new LoginModel(true),
-      new LoginView(true, currentLoggedInUser),
+      new LoginView(true, this.language),
       currentLoggedInUser
     );
   }

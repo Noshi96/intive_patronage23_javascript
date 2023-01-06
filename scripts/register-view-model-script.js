@@ -1,36 +1,13 @@
 'use strict';
 
-const registerTitle = 'Zarejestruj się';
-const registerButtonText = 'Zarejestruj';
-
-// const userNameInputLabel = 'Nazwa użytkownika';
-// const userPasswordInputLabel = 'Hasło';
-const userEmailInputLabel = 'Email';
-const userEmailConfirmationInputLabel = 'Potwierdź email';
-
-const userNameInputText = 'Utwórz nazwę użytkownika';
-const userPasswordInputText = 'Utwórz hasło';
-const userEmailInputText = 'Podaj adres e-mail';
-const userEmailConfirmationInputText = 'Wpisz e-mail ponownie';
-
-const isUserNameValidText =
-  'The user name must not contain forbidden characters.';
-const isUserNameDuplicatedText = 'Duplicated user name.';
-const isEnoughLettersText = 'Not enough characters.';
-const isEnoughDigitsText = 'Not enough digits.';
-
-const isEmailValidText = 'Wrong email format.';
-const isDuplicatedEmailWithAliasText = 'Duplicated email with alias.';
-const isDuplicatedEmailText = 'Duplicated email.';
-const isEmailAndConfirmEmailValidText = 'Confirm email is different then email';
-
 /**
  * @class RegisterModel
  *
  * Manages the data of the application.
  */
-class RegisterModel {
-  constructor() {
+class RegisterModel extends TranslationModel {
+  constructor(language) {
+    super(language);
     this.users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
   }
 
@@ -61,10 +38,12 @@ class RegisterModel {
 
       // automatic login as soon as registration is correct
       const accessForAutoLogin = true;
-      const loginController = new LoginController(
-        new LoginModel(accessForAutoLogin),
-        new LoginView(accessForAutoLogin, sameUserWithoutHash),
-        sameUserWithoutHash
+      const isFirstLogin = true;
+      new LoginController(
+        new LoginModel(accessForAutoLogin, this.language),
+        new LoginView(accessForAutoLogin, this.language),
+        sameUserWithoutHash,
+        isFirstLogin
       );
     }
   }
@@ -77,16 +56,16 @@ class RegisterModel {
     const isDuplicated = this.users.some(({ userName }) => userName === name);
 
     if (!isUserNameValid) {
-      return isUserNameValidText;
+      return this.translation.isUserNameValidText;
     }
     if (isDuplicated) {
-      return isUserNameDuplicatedText;
+      return this.translation.isUserNameDuplicatedText;
     }
     if (countLetters < 5) {
-      return isEnoughLettersText;
+      return this.translation.isEnoughLettersText;
     }
     if (countDigits < 1) {
-      return isEnoughDigitsText;
+      return this.translation.isEnoughDigitsText;
     }
     return 'valid';
   }
@@ -97,7 +76,7 @@ class RegisterModel {
     let isDuplicatedEmailWithAlias = false;
 
     if (!isEmailValid) {
-      return isEmailValidText;
+      return this.translation.isEmailValidText;
     }
 
     const isPlusInEmail = (checkEmail) => {
@@ -131,7 +110,7 @@ class RegisterModel {
     }
 
     if (isDuplicatedEmailWithAlias) {
-      return isDuplicatedEmailWithAliasText;
+      return this.translation.DuplicatedEmailWithAliasText;
     }
 
     const isDuplicated = this.users.some(
@@ -139,13 +118,15 @@ class RegisterModel {
     );
 
     if (isDuplicated) {
-      return isDuplicatedEmailText;
+      return this.translation.isDuplicatedEmailText;
     }
     return 'valid';
   }
 
   #validateUserConfirmEmail(email, confirmEmail) {
-    return email !== confirmEmail ? isEmailAndConfirmEmailValidText : 'valid';
+    return email !== confirmEmail
+      ? this.translation.isEmailAndConfirmEmailValidText
+      : 'valid';
   }
 
   #hashUserPassword(password) {
@@ -183,6 +164,20 @@ class RegisterModel {
       userConfirmEmailIsValidMessage,
     };
   }
+
+  switchViewToLogin(autoLogin, language) {
+    new LoginController(
+      new LoginModel(autoLogin, language),
+      new LoginView(autoLogin, language)
+    );
+  }
+
+  languageChange(language) {
+    new RegisterController(
+      new RegisterModel(language),
+      new RegisterView(language)
+    );
+  }
 }
 
 /**
@@ -190,8 +185,14 @@ class RegisterModel {
  *
  * Visual representation of the model.
  */
-class RegisterView {
-  constructor() {
+class RegisterView extends TranslationView {
+  constructor(language) {
+    super(language);
+    this.initView();
+  }
+
+  initView() {
+    this.removeListeners();
     this.app = document.querySelector('#root');
     this.app.innerHTML = '';
 
@@ -202,18 +203,20 @@ class RegisterView {
     this.registerNavButton.classList.add('hide');
     this.loginNavButton.classList.remove('hide');
 
+    this.loginNavButton.textContent = this.translation.loginText;
+
     this.formContainer = this.createElement('div');
     this.formContainer.classList.add('form-container');
 
     this.formContainer.innerHTML = `
-      <h1 class="form-title">${registerTitle}</h1>
+      <h1 class="form-title">${this.translation.registerTitle}</h1>
       <form class="form-style">
         <div class="single-input">
-          <label for="user-name">${userNameInputLabel}</label>
+          <label for="user-name">${this.translation.userNameInputLabel}</label>
           <input
             id="username"
             type="text"
-            placeholder="${userNameInputText}"
+            placeholder="${this.translation.userNameInputText}"
             name="user-name"
             required 
             minlength="6"
@@ -222,11 +225,11 @@ class RegisterView {
           <span class="error-user-name error" aria-live="polite"></span>
         </div>
         <div class="single-input">
-          <label for="user-password">${userPasswordInputLabel}</label>
+          <label for="user-password">${this.translation.userPasswordInputLabel}</label>
           <input
             id="password"
             type="password"
-            placeholder="${userPasswordInputText}"
+            placeholder="${this.translation.userPasswordInputText}"
             name="user-password"
             required 
             minlength="6"
@@ -234,28 +237,28 @@ class RegisterView {
           <span class="error-user-password error" aria-live="polite"></span>
         </div>
         <div class="single-input">
-          <label for="user-email">${userEmailInputLabel}</label>
+          <label for="user-email">${this.translation.userEmailInputLabel}</label>
           <input
             id="email"
             type="email"
-            placeholder="${userEmailInputText}"
+            placeholder="${this.translation.userEmailInputText}"
             name="user-email"
             required
           />
           <span class="error-user-email error" aria-live="polite"></span>
         </div>
         <div class="single-input">
-          <label for="user-confirm-email">${userEmailConfirmationInputLabel}</label>
+          <label for="user-confirm-email">${this.translation.userEmailConfirmationInputLabel}</label>
           <input
-            id="confirmemail"
+            id="confirm-email"
             type="email"
-            placeholder="${userEmailConfirmationInputText}"
+            placeholder="${this.translation.userEmailConfirmationInputText}"
             name="user-confirm-email"
             required
           />
           <span class="error-user-confirm-email error" aria-live="polite"></span>
         </div>
-        <button class="form-button">${registerButtonText}</button>
+        <button class="form-button">${this.translation.registerButtonText}</button>
       </form>
     `;
 
@@ -265,11 +268,15 @@ class RegisterView {
     this.userPassword = this.formContainer.querySelector('#password');
     this.userEmail = this.formContainer.querySelector('#email');
     this.userEmailError = this.formContainer.querySelector('.error-user-email');
-    this.userConfirmEmail = this.formContainer.querySelector('#confirmemail');
+    this.userConfirmEmail = this.formContainer.querySelector('#confirm-email');
     this.userConfirmEmailError = this.formContainer.querySelector(
       '.error-user-confirm-email'
     );
     this.app.append(this.formContainer);
+
+    this.changeLanguageButton = document.querySelector(
+      '#change-language-button'
+    );
   }
 
   get #userName() {
@@ -330,5 +337,13 @@ class RegisterView {
           ? userConfirmEmailIsValidMessage
           : '';
     });
+  }
+
+  bindSwitchViewToLogin(handleSwitchViewToLogin) {
+    document
+      .querySelector('#login-nav-button')
+      .addEventListener('click', () => {
+        handleSwitchViewToLogin(false, this.language);
+      });
   }
 }
