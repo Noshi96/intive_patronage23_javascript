@@ -1,6 +1,5 @@
 .form-container {
   width: 24rem;
-  height: auto;
   border-radius: 5px;
   background: #009879aa;
   box-shadow: 0 1px 32px #009879aa;
@@ -10,7 +9,7 @@
   justify-content: center;
   flex-direction: column;
   padding: 2rem;
-  margin: 1rem;
+  margin: 10rem 2rem 0;
 }
 
 .form-title {

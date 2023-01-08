@@ -398,12 +398,13 @@ class TransactionsModel extends TranslationModel {
  */
 class TransactionsView extends TranslationView {
   #isOpen = false;
+
   constructor(language) {
     super(language);
-    this.initView();
+    this.#initView();
   }
 
-  async initView() {
+  async #initView() {
     this.removeListeners();
     this.changeLanguageButton = document.querySelector(
       '#change-language-button'
@@ -411,7 +412,7 @@ class TransactionsView extends TranslationView {
     this.app = document.querySelector('#root');
     this.app.innerHTML = '';
 
-    this.transactionsContainer = this.createElement(
+    this.transactionsContainer = this.#createElement(
       'div',
       'transactions-container'
     );
@@ -432,7 +433,7 @@ class TransactionsView extends TranslationView {
     this.barCtx = document.getElementById('bar-chart');
   }
 
-  drawChart(ctx, config) {
+  #drawChart(ctx, config) {
     new Chart(ctx, config);
   }
 
@@ -443,27 +444,35 @@ class TransactionsView extends TranslationView {
       allTransactions,
       transactionsTypes,
     } = await handleGetLoggedInUserTransactions();
-    this.drawChart(this.doughnutCtx, doughnutChartConfig);
-    this.drawChart(this.barCtx, barChartConfig);
+    this.#drawChart(this.doughnutCtx, doughnutChartConfig);
+    this.#drawChart(this.barCtx, barChartConfig);
 
     // Mobile Transaction table view
     let isMobile = true;
     if (window.innerWidth < 769) {
-      this.createFilterTableInput(allTransactions, transactionsTypes, isMobile);
-      this.createMobileTransactionsTableHeader(
+      this.#createFilterTableInput(
+        allTransactions,
+        transactionsTypes,
+        isMobile
+      );
+      this.#createMobileTransactionsTableHeader(
         allTransactions,
         transactionsTypes
       );
-      this.createMobileTableBody(allTransactions, transactionsTypes);
+      this.#createMobileTableBody(allTransactions, transactionsTypes);
     } else {
       isMobile = false;
-      this.createFilterTableInput(allTransactions, transactionsTypes, isMobile);
-      this.createTransactionsTableHeader(allTransactions, transactionsTypes);
-      this.createTableBody(allTransactions, transactionsTypes);
+      this.#createFilterTableInput(
+        allTransactions,
+        transactionsTypes,
+        isMobile
+      );
+      this.#createTransactionsTableHeader(allTransactions, transactionsTypes);
+      this.#createTableBody(allTransactions, transactionsTypes);
     }
   }
 
-  createElement(tag, className) {
+  #createElement(tag, className) {
     const element = document.createElement(tag);
     if (className) element.classList.add(className);
 
@@ -482,7 +491,7 @@ class TransactionsView extends TranslationView {
   bindLoadHeaderAndUserName(handleGetLoggedInUserName) {
     const userName = handleGetLoggedInUserName();
     this.headerNav = document.querySelector('.header-nav');
-    this.languageButtonContainer = this.createElement(
+    this.languageButtonContainer = this.#createElement(
       'div',
       'language-button-container'
     );
@@ -492,7 +501,7 @@ class TransactionsView extends TranslationView {
       </button>
     `;
 
-    this.navListLoggedIn = this.createElement('ul', 'nav-list-logged-in');
+    this.navListLoggedIn = this.#createElement('ul', 'nav-list-logged-in');
     this.loggedName = document.createElement('li');
     this.loggedName.setAttribute('id', 'logged-name');
     this.logoutButton = document.createElement('li');
@@ -507,7 +516,7 @@ class TransactionsView extends TranslationView {
     this.headerNav.append(this.languageButtonContainer);
   }
 
-  createTransactionsTableHeader(allTransactions, transactionsTypes) {
+  #createTransactionsTableHeader(allTransactions, transactionsTypes) {
     this.styledTable = document.createElement('table');
     this.styledTable.classList.add('styled-table');
     this.styledTable.setAttribute('id', 'transactions-table');
@@ -536,19 +545,19 @@ class TransactionsView extends TranslationView {
           allTransactions,
           'asc'
         );
-        this.createTableBody(sortedTransactions, transactionsTypes);
+        this.#createTableBody(sortedTransactions, transactionsTypes);
       } else {
         sortTypeButton.setAttribute('data-dir', 'desc');
         const sortedTransactions = this.#sortTransactionsByType(
           allTransactions,
           'desc'
         );
-        this.createTableBody(sortedTransactions, transactionsTypes);
+        this.#createTableBody(sortedTransactions, transactionsTypes);
       }
     });
   }
 
-  createFilterTableInput(allTransactions, transactionsTypes, isMobile) {
+  #createFilterTableInput(allTransactions, transactionsTypes, isMobile) {
     const filterInput = document.createElement('input');
     filterInput.setAttribute('type', 'text');
     filterInput.setAttribute('id', 'myInput');
@@ -565,14 +574,14 @@ class TransactionsView extends TranslationView {
         allTransactions
       );
       if (isMobile) {
-        this.createMobileTableBody(filteredTransactions, transactionsTypes);
+        this.#createMobileTableBody(filteredTransactions, transactionsTypes);
       } else {
-        this.createTableBody(filteredTransactions, transactionsTypes);
+        this.#createTableBody(filteredTransactions, transactionsTypes);
       }
     });
   }
 
-  createMobileTransactionsTableHeader(allTransactions, transactionsTypes) {
+  #createMobileTransactionsTableHeader(allTransactions, transactionsTypes) {
     this.styledTable = document.createElement('table');
     this.styledTable.classList.add('styled-table');
     this.styledTable.setAttribute('id', 'transactions-table');
@@ -598,19 +607,19 @@ class TransactionsView extends TranslationView {
           allTransactions,
           'asc'
         );
-        this.createMobileTableBody(sortedTransactions, transactionsTypes);
+        this.#createMobileTableBody(sortedTransactions, transactionsTypes);
       } else {
         sortTypeButton.setAttribute('data-dir', 'desc');
         const sortedTransactions = this.#sortTransactionsByType(
           allTransactions,
           'desc'
         );
-        this.createMobileTableBody(sortedTransactions, transactionsTypes);
+        this.#createMobileTableBody(sortedTransactions, transactionsTypes);
       }
     });
   }
 
-  createMobileTableBody(allTransactions, transactionsTypes) {
+  #createMobileTableBody(allTransactions, transactionsTypes) {
     this.tbody.innerHTML = '';
     let visited = 'empty';
     allTransactions.forEach(
@@ -695,7 +704,7 @@ class TransactionsView extends TranslationView {
     );
   }
 
-  createTableBody(allTransactions, transactionsTypes) {
+  #createTableBody(allTransactions, transactionsTypes) {
     this.tbody.innerHTML = '';
     allTransactions.forEach(
       ({ date, type, balance, description, amount, location }) => {

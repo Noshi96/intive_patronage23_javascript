@@ -31,10 +31,11 @@ const en = {
   userEmailInputText: 'Enter email address',
   userEmailConfirmationInputText: 'Enter email again',
 
-  isUserNameValidText: 'The user name must not contain forbidden characters.',
+  isUserNameValidText:
+    'The user name can only consist of letters, numbers and the given characters: - _ [ ]  /',
   isUserNameDuplicatedText: 'Duplicated user name.',
-  isEnoughLettersText: 'Not enough characters.',
-  isEnoughDigitsText: 'Not enough digits.',
+  isEnoughLettersText: 'The user name must consist of at least 5 letters.',
+  isEnoughDigitsText: 'The user name must consist of at least 1 digit.',
 
   isEmailValidText: 'Wrong email format.',
   isDuplicatedEmailWithAliasText: 'Duplicated email with alias.',
@@ -97,10 +98,12 @@ const pl = {
   userEmailConfirmationInputText: 'Wpisz e-mail ponownie',
 
   isUserNameValidText:
-    'Nazwa użytkownika nie może zawierać zabronionych znaków',
+    'Nazwa użytkownika może składać się tylko z liter, cyfr i podanych znaków: - _ [ ]  /',
   isUserNameDuplicatedText: 'Taki użytkownik już istnieje',
-  isEnoughLettersText: 'Za mało znaków.',
-  isEnoughDigitsText: 'Za mało cyfr.',
+  isEnoughLettersText:
+    'Nazwa użytkownika musi składać się z conajmniej 5 liter.',
+  isEnoughDigitsText:
+    'Nazwa użytkownika musi składać się z conajmniej 1 cyfry.',
 
   isEmailValidText: 'Nieprawidłowy format emaila.',
   isDuplicatedEmailWithAliasText: 'Ten email posiada alias i już istnieje',

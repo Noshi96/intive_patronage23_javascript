@@ -113,9 +113,7 @@ class LoginModel extends TranslationModel {
       const existingUser = this.users.filter(
         ({ userName, userEmail }) => name === userName || name === userEmail
       );
-      return existingUser.length !== 0 ? existingUser[0].id : '';
-    } else {
-      return '';
+      return existingUser[0]?.id;
     }
   }
 
@@ -156,10 +154,10 @@ class LoginView extends TranslationView {
   constructor(autoLogin = false, language) {
     super(language);
     this.autoLogin = autoLogin;
-    this.initView();
+    this.#initView();
   }
 
-  initView() {
+  #initView() {
     this.removeListeners();
     this.app = document.querySelector('#root');
 
@@ -176,7 +174,7 @@ class LoginView extends TranslationView {
 
     this.registerNavButton.textContent = this.translation.registerText;
 
-    this.formContainer = this.createElement('div');
+    this.formContainer = this.#createElement('div');
     this.formContainer.classList.add('form-container');
 
     this.formContainer.innerHTML = `
@@ -235,7 +233,7 @@ class LoginView extends TranslationView {
     return this.userPassword.value;
   }
 
-  createElement(tag, className) {
+  #createElement(tag, className) {
     const element = document.createElement(tag);
     if (className) element.classList.add(className);
 
