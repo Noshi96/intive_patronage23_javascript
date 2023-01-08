@@ -162,4 +162,13 @@ th button[data-dir="desc"]::after {
   .styled-table tbody tr {
     cursor: initial;
   }
+  .transactions-section {
+    margin-top: 3rem;
+  }
+}
+
+@media only screen and (max-width: 375px) {
+  .transactions-section {
+    margin-top: 6rem;
+  }
 }

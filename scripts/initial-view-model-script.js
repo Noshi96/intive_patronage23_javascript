@@ -40,15 +40,15 @@ class InitialModel extends TranslationModel {
 class InitialView extends TranslationView {
   constructor(language) {
     super(language);
-    this.initView();
+    this.#initView();
   }
 
-  initView = () => {
+  #initView = () => {
     this.removeListeners();
     this.app = document.querySelector('#root');
     this.header = document.querySelector('.header');
-    this.headerNav = this.createElement('nav', 'header-nav');
-    this.initialContainer = this.createElement('div');
+    this.headerNav = this.#createElement('nav', 'header-nav');
+    this.initialContainer = this.#createElement('div');
     this.initialContainer.classList.add('initial-container');
     this.app.innerHTML = '';
     this.header.innerHTML = '';
@@ -70,7 +70,7 @@ class InitialView extends TranslationView {
     this.header.append(this.headerNav);
     this.app.append(this.initialContainer);
 
-    this.languageButtonContainer = this.createElement(
+    this.languageButtonContainer = this.#createElement(
       'div',
       'language-button-container'
     );
@@ -86,7 +86,7 @@ class InitialView extends TranslationView {
     );
   };
 
-  createElement(tag, className) {
+  #createElement(tag, className) {
     const element = document.createElement(tag);
     if (className) element.classList.add(className);
 
