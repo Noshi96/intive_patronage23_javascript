@@ -110,7 +110,7 @@ class RegisterModel extends TranslationModel {
     }
 
     if (isDuplicatedEmailWithAlias) {
-      return this.translation.DuplicatedEmailWithAliasText;
+      return this.translation.isDuplicatedEmailWithAliasText;
     }
 
     const isDuplicated = this.users.some(
@@ -188,10 +188,10 @@ class RegisterModel extends TranslationModel {
 class RegisterView extends TranslationView {
   constructor(language) {
     super(language);
-    this.initView();
+    this.#initView();
   }
 
-  initView() {
+  #initView() {
     this.removeListeners();
     this.app = document.querySelector('#root');
     this.app.innerHTML = '';
@@ -205,7 +205,7 @@ class RegisterView extends TranslationView {
 
     this.loginNavButton.textContent = this.translation.loginText;
 
-    this.formContainer = this.createElement('div');
+    this.formContainer = this.#createElement('div');
     this.formContainer.classList.add('form-container');
 
     this.formContainer.innerHTML = `
@@ -292,7 +292,7 @@ class RegisterView extends TranslationView {
     return this.userConfirmEmail.value;
   }
 
-  createElement(tag, className) {
+  #createElement(tag, className) {
     const element = document.createElement(tag);
     if (className) element.classList.add(className);
 
