@@ -181,7 +181,7 @@ class LoginView extends TranslationView {
       <h1 class="form-title">${this.translation.loginTitle}</h1>
       <form class="form-style">
         <div class="single-input">
-          <label for="user-name">${this.translation.userNameInputLabel}</label>
+          <label for="username">${this.translation.userNameInputLabel}</label>
           <input
             id="username"
             type="text"
@@ -194,7 +194,7 @@ class LoginView extends TranslationView {
           <span class="error-user-name error" aria-live="polite"></span>
         </div>
         <div class="single-input">
-          <label for="user-password">${this.translation.userPasswordInputLabel}</label>
+          <label for="password">${this.translation.userPasswordInputLabel}</label>
           <input
             id="password"
             type="password"
