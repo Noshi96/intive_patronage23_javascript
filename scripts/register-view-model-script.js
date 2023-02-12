@@ -212,7 +212,7 @@ class RegisterView extends TranslationView {
       <h1 class="form-title">${this.translation.registerTitle}</h1>
       <form class="form-style">
         <div class="single-input">
-          <label for="user-name">${this.translation.userNameInputLabel}</label>
+          <label for="username">${this.translation.userNameInputLabel}</label>
           <input
             id="username"
             type="text"
@@ -225,7 +225,7 @@ class RegisterView extends TranslationView {
           <span class="error-user-name error" aria-live="polite"></span>
         </div>
         <div class="single-input">
-          <label for="user-password">${this.translation.userPasswordInputLabel}</label>
+          <label for="password">${this.translation.userPasswordInputLabel}</label>
           <input
             id="password"
             type="password"
@@ -237,7 +237,7 @@ class RegisterView extends TranslationView {
           <span class="error-user-password error" aria-live="polite"></span>
         </div>
         <div class="single-input">
-          <label for="user-email">${this.translation.userEmailInputLabel}</label>
+          <label for="email">${this.translation.userEmailInputLabel}</label>
           <input
             id="email"
             type="email"
@@ -248,7 +248,7 @@ class RegisterView extends TranslationView {
           <span class="error-user-email error" aria-live="polite"></span>
         </div>
         <div class="single-input">
-          <label for="user-confirm-email">${this.translation.userEmailConfirmationInputLabel}</label>
+          <label for="confirm-email">${this.translation.userEmailConfirmationInputLabel}</label>
           <input
             id="confirm-email"
             type="email"
